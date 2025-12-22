@@ -1,0 +1,33 @@
+name: "amr-basic"
+
+power:
+  battery:
+    chemistry: "Li-ion"
+    voltage_v: 14.8
+    max_current_a: 20
+  rail:
+    voltage_v: 3.3
+    max_current_a: 2
+
+mcu:
+  name: "ESP32-S3"
+  logic_voltage_v: 3.3
+  max_gpio_current_ma: 20
+
+driver:
+  name: "TB6612FNG-like"
+  motor_supply_min_v: 2.5
+  motor_supply_max_v: 13.5
+  continuous_per_channel_a: 1.2
+  peak_per_channel_a: 3.2
+  channels: 2
+  logic_voltage_min_v: 2.7
+  logic_voltage_max_v: 5.5
+
+motors:
+  - name: "DC gearmotor"
+    count: 2
+    voltage_min_v: 6
+    voltage_max_v: 12
+    stall_current_a: 5.0
+    nominal_current_a: 1.5
