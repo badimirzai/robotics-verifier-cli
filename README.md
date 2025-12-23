@@ -1,6 +1,6 @@
 # RoboStack CLI
 
-A deterministic verifier and part-evaluation tool for early-stage robotics BOMs.
+A deterministic verifier and part-evaluation tool for early-stage robotics Bill of Materials (BOMs).
 
 RoboStack helps you catch **electrical and control-level incompatibilities before you buy parts**.  
 It is intentionally strict, explainable, and automation-friendly.
@@ -73,7 +73,7 @@ go build
 Or run directly:
 
 ```sh
-go run . verify -f examples/amr_basic.yaml
+go run . validate -f examples/amr_basic.yaml
 ```
 
 ---

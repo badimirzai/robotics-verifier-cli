@@ -1,6 +1,6 @@
-module github.com/badi96/robostack-cli
+module github.com/badimirzai/robostack-cli
 
-go 1.19
+go 1.25
 
 require (
 	github.com/spf13/cobra v1.10.2
