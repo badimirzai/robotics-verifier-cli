@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/badi96/robostack-cli/internal/model"
-	"github.com/badi96/robostack-cli/internal/output"
-	"github.com/badi96/robostack-cli/internal/validate"
+	"github.com/badimirzai/robostack-cli/internal/model"
+	"github.com/badimirzai/robostack-cli/internal/output"
+	"github.com/badimirzai/robostack-cli/internal/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

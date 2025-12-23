@@ -3,7 +3,7 @@ package output
 import (
 	"strings"
 
-	"github.com/badi96/robostack-cli/internal/validate"
+	"github.com/badimirzai/robostack-cli/internal/validate"
 )
 
 func RenderReport(r validate.Report) string {

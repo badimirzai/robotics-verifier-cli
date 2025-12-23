@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/badi96/robostack-cli/internal/model"
+	"github.com/badimirzai/robostack-cli/internal/model"
 )
 
 type Severity string

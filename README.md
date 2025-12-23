@@ -65,7 +65,7 @@ Those come **later**, if and only if the deterministic core proves useful.
 ## Installation
 
 ```sh
-git clone https://github.com/badi96/robostack-cli
+git clone https://github.com/badimirzai/robostack-cli
 cd robostack-cli
 go build
 ```
