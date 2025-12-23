@@ -8,6 +8,8 @@ It is intentionally strict, explainable, and automation-friendly.
 This is **not** a parts marketplace, optimizer, or AI recommender.  
 It is a verifier first, a decision-support tool second.
 
+RoboStack is designed as an **open core**, with a stable foundation intended to support future extensions and services.
+
 ---
 
 ## Why this exists
@@ -35,7 +37,7 @@ RoboStack consumes a small YAML spec describing your robot stack:
 It then runs cross-domain checks, including:
 - Driver channel count vs motor count
 - Battery voltage vs driver motor supply range
-- Driver peak/continuous current vs motor stall/nominal current
+- Driver peak and continuous current vs motor stall and nominal current
 - Logic voltage compatibility (MCU ↔ rail ↔ driver)
 - Basic power-rail sanity
 
@@ -44,7 +46,7 @@ It then runs cross-domain checks, including:
 - A non-zero exit code is returned if any `ERROR` is present
 - Output is deterministic and explainable
 
-This makes RoboStack safe to use in:
+This makes RoboStack suitable for:
 - CI pipelines
 - Design checklists
 - Automated BOM validation
@@ -111,14 +113,14 @@ motors:
   stall_current: 2.2
 ```
 
-See `examples/amr_basic.yaml` for a complete, working example.
+See `examples/amr_basic.yaml` for a complete working example.
 
 ---
 
 ## Output and exit codes
 
 - Results are grouped by severity: `INFO`, `WARN`, `ERROR`
-- Exit code:
+- Exit codes:
   - `0`: No errors
   - `2`: One or more `ERROR` entries detected
 
@@ -145,11 +147,11 @@ Long-term:
 
 ## Design principles
 
-- **Deterministic over clever**
-- **Explainable over optimized**
-- **Fail fast and loudly**
-- **No hidden assumptions**
-- **No AI in the decision loop**
+- Deterministic over clever
+- Explainable over optimized
+- Fail fast and loudly
+- No hidden assumptions
+- No AI in the decision loop
 
 If the tool cannot explain *why* a part is rejected or ranked lower, it is considered broken.
 
@@ -157,11 +159,12 @@ If the tool cannot explain *why* a part is rejected or ranked lower, it is consi
 
 ## License
 
-MIT (subject to change)
+This project is licensed under the Mozilla Public License 2.0 (MPL 2.0).  
+See the LICENSE file for full details.
 
 ---
 
 ## Disclaimer
 
-RoboStack does not replace datasheets or engineering judgment.  
-It exists to surface mistakes early, not to remove responsibility.
+RoboStack does not replace datasheets, safety analysis, or engineering judgment.  
+It is intended for early-stage verification and decision support only.
