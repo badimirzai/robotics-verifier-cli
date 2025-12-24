@@ -1,22 +1,28 @@
 # RoboStack CLI
 
-A deterministic verifier and part-evaluation tool for early-stage robotics Bill of Materials (BOMs).
+A **deterministic verifier** for early-stage robotics Bills of Materials (BOMs).
 
-RoboStack helps you catch **electrical and control-level incompatibilities before you buy parts**.  
+RoboStack helps you catch electrical (and a few basic integration) incompatibilities **before you buy parts**.
 It is intentionally strict, explainable, and automation-friendly.
 
-This is **not** a parts marketplace, optimizer, or AI recommender.  
-It is a verifier first, a decision-support tool second.
+This is **not** a parts marketplace or optimizer.
+RoboStack enforces deterministic, explainable checks before any ranking or recommendation is considered.
 
-RoboStack is designed as an **open core**, with a stable foundation intended to support future extensions and services.
+---
+
+## Status
+
+**Alpha.** Rules and the YAML schema may change.  
+If you rely on this tool, pin a commit.
 
 ---
 
 ## Why this exists
 
-Most robotics failures happen *before* firmware is written:
+Most robotics failures happen before firmware is written:
+
 - Wrong motor driver voltage range
-- Undersized current limits vs stall current
+- Undersized current limits vs motor stall current
 - Logic-level mismatches between MCU, rails, and drivers
 - Silent assumptions hidden in datasheets
 
@@ -26,8 +32,10 @@ RoboStack turns these assumptions into **explicit, machine-checkable rules**.
 
 ## What it does today
 
-### 1. Deterministic stack verification
+### Deterministic stack verification
+
 RoboStack consumes a small YAML spec describing your robot stack:
+
 - Battery
 - Logic rail
 - MCU
@@ -35,58 +43,121 @@ RoboStack consumes a small YAML spec describing your robot stack:
 - Motors
 
 It then runs cross-domain checks, including:
+
 - Driver channel count vs motor count
 - Battery voltage vs driver motor supply range
-- Driver peak and continuous current vs motor stall and nominal current
-- Logic voltage compatibility (MCU ↔ rail ↔ driver)
-- Basic power-rail sanity
+- Driver peak and continuous current vs motor stall current (per channel)
+- Driver continuous current vs motor nominal current (with margin warning)
+- Basic power-rail sanity notes
 
-### 2. Structured, CI-friendly output
+### CI-friendly output
+
 - Findings are emitted as `INFO`, `WARN`, or `ERROR`
 - A non-zero exit code is returned if any `ERROR` is present
 - Output is deterministic and explainable
 
-This makes RoboStack suitable for:
-- CI pipelines
-- Design checklists
-- Automated BOM validation
-
 ---
 
-## What it deliberately does *not* do (yet)
+## What it deliberately does not do (yet)
 
 - No AI-based decision making
 - No opaque scoring
 - No automatic purchasing
 - No optimization without explanations
 
-Those come **later**, if and only if the deterministic core proves useful.
+Those come later **only if** the deterministic core proves useful.
 
 ---
 
-## Installation
+## Prerequisites
 
-```sh
-git clone https://github.com/badimirzai/robostack-cli
-cd robostack-cli
-go build
+- Go 1.25.5 (built with go1.25.5). Official releases: https://go.dev/dl/
+
+## Install and run
+
+### Option A: quickest (recommended)
+Runs the included example spec.
+
+```bash
+make validate
 ```
 
-Or run directly:
+Note: `make validate` will exit non-zero if the example triggers any `ERROR` rules.
 
-```sh
+### Option B: run any command via Go (no install)
+Run validate on an example file:
+
+```bash
 go run . validate -f examples/amr_basic.yaml
 ```
+
+Or via Make (this is the correct way to use the `run` target):
+
+```bash
+make run ARGS="validate -f examples/amr_basic.yaml"
+```
+
+### Option C: build a local binary (no PATH required)
+Build:
+
+```bash
+make build
+```
+
+Run:
+
+```bash
+./bin/robostack validate -f examples/amr_basic.yaml
+```
+
+### Option D: install globally (puts `robostack` on your PATH)
+Install:
+
+```bash
+make install
+```
+
+If your shell says `robostack: command not found`, add Go’s bin directory to PATH:
+
+```bash
+export PATH="$(go env GOPATH)/bin:$PATH"
+```
+
+---
+
+## Example output
+
+Example run:
+
+```bash
+go run . validate -f examples/amr_basic.yaml
+```
+
+Example output:
+
+```text
+robostack validate
+--------------
+INFO DRV_CHANNELS_OK: channels OK: 2 motors <= 2 driver channels
+ERROR DRV_SUPPLY_RANGE: battery 14.80V outside driver motor supply range [2.50, 13.50]V
+ERROR DRV_PEAK_LT_STALL: driver peak 3.20A < motor DC gearmotor stall 5.00A (per channel)
+WARN DRV_CONT_LOW_MARGIN: driver continuous 1.20A may be low for motor DC gearmotor nominal 1.50A (want >= 1.88A)
+INFO RAIL_BUDGET_NOTE: logic rail budget set to 2.00A (v1 does not estimate MCU+driver logic draw yet)
+```
+
+Exit codes:
+- `0` = no `ERROR`
+- `2` = one or more `ERROR`
 
 ---
 
 ## Spec format
 
-The input spec is a small YAML file describing your robot stack components and their key electrical properties.
-
-Example:
+The input spec is a small YAML file describing your robot stack components and key electrical properties.
 
 ```yaml
+spec_version: 0.1
+
 battery:
   voltage_nominal: 24
   voltage_max: 25.2
@@ -117,29 +188,18 @@ See `examples/amr_basic.yaml` for a complete working example.
 
 ---
 
-## Output and exit codes
-
-- Results are grouped by severity: `INFO`, `WARN`, `ERROR`
-- Exit codes:
-  - `0`: No errors
-  - `2`: One or more `ERROR` entries detected
-
-This makes RoboStack suitable for automated enforcement in CI.
-
----
-
 ## Roadmap (high level)
 
-Near-term:
-- Canonical `Part` data model with confidence tracking
+**Near-term**
+- Canonical part data model with confidence tracking
 - Supplier adapters (starting with Mouser)
 - Data completeness reporting
 
-Mid-term:
+**Mid-term**
 - Candidate filtering and transparent ranking
 - Reason traces for every score contribution
 
-Long-term:
+**Long-term**
 - Optional backend for advanced ranking
 - AI-generated explanations only (never decisions)
 
@@ -153,18 +213,18 @@ Long-term:
 - No hidden assumptions
 - No AI in the decision loop
 
-If the tool cannot explain *why* a part is rejected or ranked lower, it is considered broken.
+If the tool cannot explain why a part is rejected or ranked lower, it is considered broken.
 
 ---
 
 ## License
 
-This project is licensed under the Mozilla Public License 2.0 (MPL 2.0).  
-See the LICENSE file for full details.
+This project is licensed under the **Mozilla Public License 2.0 (MPL 2.0)**.  
+See the `LICENSE` file for details.
 
 ---
 
 ## Disclaimer
 
 RoboStack does not replace datasheets, safety analysis, or engineering judgment.  
-It is intended for early-stage verification and decision support only.
+It is intended for **early-stage verification and decision support**.
