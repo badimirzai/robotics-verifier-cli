@@ -1,0 +1,31 @@
+part_id: drivers/l298
+type: motor_driver
+name: L298 (Dual Full Bridge)
+mpn: L298
+
+motor_driver:
+  channels: 2
+
+  # Motor supply (Vs)
+  motor_voltage_min: 5.0
+  motor_voltage_max: 46.0
+
+  # Logic supply (Vss)
+  logic_voltage_min: 5.0
+  logic_voltage_max: 7.0
+
+  # This driver runs hot. Set conservative current numbers.
+  # Many modules advertise 2A, but thermal reality is worse without serious heatsinking.
+  current_continuous: 1.0
+  current_peak: 2.0
+
+sources:
+  - https://www.st.com/resource/en/datasheet/l298.pdf
+notes:
+  - "Logic is 5V-class. 3.3V MCU usually needs level shifting."
+  - "Thermal limits dominate; treat advertised currents as optimistic unless you have heatsinking."
+confidence:
+  motor_voltage_max: high
+  logic_voltage_min: medium
+  current_continuous: medium
+  current_peak: medium
