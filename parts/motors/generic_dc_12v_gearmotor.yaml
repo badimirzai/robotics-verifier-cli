@@ -1,0 +1,7 @@
+part_id: motors/generic_dc_12v_gearmotor
+type: motor
+name: Generic DC gearmotor (12V-class)
+
+motor:
+  nominal_current: 1.5
+  stall_current: 5.0

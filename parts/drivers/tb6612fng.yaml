@@ -1,0 +1,19 @@
+part_id: drivers/tb6612fng
+type: motor_driver
+name: TB6612FNG
+mpn: TB6612FNG
+
+motor_driver:
+  channels: 2
+
+  # Motor supply (VM)
+  motor_voltage_min: 2.5
+  motor_voltage_max: 13.5
+
+  # Logic supply (VCC)
+  logic_voltage_min: 2.7
+  logic_voltage_max: 5.5
+
+  # Output current (per channel)
+  current_continuous: 1.2
+  current_peak: 3.2
