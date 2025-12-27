@@ -1,0 +1,19 @@
+part_id: drivers/l298
+type: motor_driver
+name: L298
+mpn: L298
+
+motor_driver:
+  channels: 2
+
+  # Motor supply (Vs)
+  motor_voltage_min: 5.0
+  motor_voltage_max: 46.0
+
+  # Logic supply (Vss) -> 5V logic requirement
+  logic_voltage_min: 5.0
+  logic_voltage_max: 7.0
+
+  # Conservative thermal limits
+  current_continuous: 1.0
+  current_peak: 2.0

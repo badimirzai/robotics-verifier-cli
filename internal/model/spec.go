@@ -4,13 +4,13 @@ type RobotSpec struct {
 	Name   string      `yaml:"name"`
 	Power  PowerSpec   `yaml:"power"`
 	Motors []Motor     `yaml:"motors"`
-	Driver MotorDriver `yaml:"driver"`
+	Driver MotorDriver `yaml:"motor_driver"`
 	MCU    MCU         `yaml:"mcu"`
 }
 
 type PowerSpec struct {
 	Battery Battery `yaml:"battery"`
-	Rail    Rail    `yaml:"rail"` // main logic rail after regulation
+	Rail    Rail    `yaml:"logic_rail"` // main logic rail after regulation
 }
 
 type Battery struct {
@@ -25,6 +25,7 @@ type Rail struct {
 }
 
 type Motor struct {
+	Part            string  `yaml:"part,omitempty"`
 	Name            string  `yaml:"name"`
 	Count           int     `yaml:"count"`
 	VoltageMinV     float64 `yaml:"voltage_min_v"`
@@ -34,6 +35,7 @@ type Motor struct {
 }
 
 type MotorDriver struct {
+	Part             string  `yaml:"part,omitempty"`
 	Name             string  `yaml:"name"`
 	MotorSupplyMinV  float64 `yaml:"motor_supply_min_v"`
 	MotorSupplyMaxV  float64 `yaml:"motor_supply_max_v"`
@@ -45,6 +47,7 @@ type MotorDriver struct {
 }
 
 type MCU struct {
+	Part             string  `yaml:"part,omitempty"`
 	Name             string  `yaml:"name"`
 	LogicVoltageV    float64 `yaml:"logic_voltage_v"` // usually 3.3 for ESP32
 	MaxGPIOCurrentmA float64 `yaml:"max_gpio_current_ma"`

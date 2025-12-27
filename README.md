@@ -1,142 +1,34 @@
-# RoboStack CLI
+# Robotics Verifier CLI
+[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml)
+**The Specification layer for robotics hardware.**  
+Robotics Verifier CLI turns your robot's electrical architecture into a machine‑checkable spec.  
+It replaces scattered spreadsheets and implicit assumptions with structured YAML verified by a rule engine before you ever order parts.
 
-A **deterministic verifier** for early-stage robotics Bills of Materials (BOMs).
+Deterministic today by design. Assistive AI can enter later when guarantees exist.
 
-RoboStack helps you catch electrical (and a few basic integration) incompatibilities **before you buy parts**.
-It is intentionally strict, explainable, and automation-friendly.
-
-This is **not** a parts marketplace or optimizer.
-RoboStack enforces deterministic, explainable checks before any ranking or recommendation is considered.
-
----
-
-## Status
-
-**Alpha.** Rules and the YAML schema may change.  
-If you rely on this tool, pin a commit.
+Project codename: Architon (tentative, may change).
 
 ---
 
 ## Why this exists
 
-Most robotics failures happen before firmware is written:
-
-- Wrong motor driver voltage range
-- Undersized current limits vs motor stall current
-- Logic-level mismatches between MCU, rails, and drivers
-- Silent assumptions hidden in datasheets
-
-RoboStack turns these assumptions into **explicit, machine-checkable rules**.
+Most robotics failures start before firmware runs: mismatched voltages, undersized current paths, logic‑level mistakes.  
+Robotics Verifier CLI provides a **contract** for electrical architecture so these failures surface early, locally and in CI.
 
 ---
 
 ## What it does today
 
-### Deterministic stack verification
-
-RoboStack consumes a small YAML spec describing your robot stack:
-
-- Battery
-- Logic rail
-- MCU
-- Motor driver
-- Motors
-
-It then runs cross-domain checks, including:
-
-- Driver channel count vs motor count
-- Battery voltage vs driver motor supply range
-- Driver peak and continuous current vs motor stall current (per channel)
-- Driver continuous current vs motor nominal current (with margin warning)
-- Basic power-rail sanity notes
-
-### CI-friendly output
-
-- Findings are emitted as `INFO`, `WARN`, or `ERROR`
-- A non-zero exit code is returned if any `ERROR` is present
-- Output is deterministic and explainable
-
----
-
-## What it deliberately does not do (yet)
-
-- No AI-based decision making
-- No opaque scoring
-- No automatic purchasing
-- No optimization without explanations
-
-Those come later **only if** the deterministic core proves useful.
-
----
-
-## Prerequisites
-
-- Go 1.25.5 (built with go1.25.5). Official releases: https://go.dev/dl/
-
-## Install and run
-
-### Option A: quickest (recommended)
-Runs the included example spec.
-
-```bash
-make validate
-```
-
-Note: `make validate` will exit non-zero if the example triggers any `ERROR` rules.
-
-### Option B: run any command via Go (no install)
-Run validate on an example file:
-
-```bash
-go run . validate -f examples/amr_basic.yaml
-```
-
-Or via Make (this is the correct way to use the `run` target):
-
-```bash
-make run ARGS="validate -f examples/amr_basic.yaml"
-```
-
-### Option C: build a local binary (no PATH required)
-Build:
-
-```bash
-make build
-```
-
-Run:
-
-```bash
-./bin/robostack validate -f examples/amr_basic.yaml
-```
-
-### Option D: install globally (puts `robostack` on your PATH)
-Install:
-
-```bash
-make install
-```
-
-If your shell says `robostack: command not found`, add Go’s bin directory to PATH:
-
-```bash
-export PATH="$(go env GOPATH)/bin:$PATH"
-```
-
----
-
-## Example output
-
-Example run:
-
-```bash
-go run . validate -f examples/amr_basic.yaml
-```
+- Parse hardware specs defined in YAML
+- Check voltage, current, and logic‑level compatibility
+- Emit structured findings: `INFO`, `WARN`, `ERROR`
+- Exit non‑zero on `ERROR` so CI can block merges
+- CLI‑friendly outputs for terminals and pipelines
 
 Example output:
 
 ```text
-robostack validate
+rv check
 --------------
 INFO DRV_CHANNELS_OK: channels OK: 2 motors <= 2 driver channels
 ERROR DRV_SUPPLY_RANGE: battery 14.80V outside driver motor supply range [2.50, 13.50]V
@@ -145,86 +37,193 @@ WARN DRV_CONT_LOW_MARGIN: driver continuous 1.20A may be low for motor DC gearmo
 INFO RAIL_BUDGET_NOTE: logic rail budget set to 2.00A (v1 does not estimate MCU+driver logic draw yet)
 ```
 
-Exit codes:
-- `0` = no `ERROR`
-- `2` = one or more `ERROR`
+---
+
+## Architecture in one paragraph
+
+1. **Spec** – YAML definitions that capture robot hardware intent.  
+2. **Engine** – deterministic checks with explainable rules.  
+3. **Assistants (future)** – optional helpers that operate *on top* once guarantees exist.  
+   They **do not replace** the rule engine. AI will never silently assert correctness.
+
+This is a sequencing principle: **trust first, automation second.**
 
 ---
 
-## Spec format
+## Installation
 
-The input spec is a small YAML file describing your robot stack components and key electrical properties.
+### Prerequisites
 
-```yaml
-spec_version: 0.1
+- Go **1.25.5** or newer: https://go.dev/dl/
+- GOPATH/bin added to your PATH
 
-battery:
-  voltage_nominal: 24
-  voltage_max: 25.2
+---
 
-logic_rail:
-  voltage: 5.0
-  max_current: 3.0
+## Quick start
 
-mcu:
-  logic_voltage: 3.3
+```bash
+git clone https://github.com/badimirzai/robotics-verifier-cli.git
+cd robotics-verifier-cli
 
-motor_driver:
-  channels: 2
-  motor_voltage_min: 8
-  motor_voltage_max: 30
-  logic_voltage_min: 3.0
-  logic_voltage_max: 5.5
-  current_continuous: 1.5
-  current_peak: 3.0
-
-motors:
-  count: 2
-  nominal_current: 0.8
-  stall_current: 2.2
+# build and install the CLI
+make build
+make install     # installs robotics-verifier-cli and rv symlink
 ```
 
-See `examples/amr_basic.yaml` for a complete working example.
+Verify install:
+
+```bash
+rv --help
+```
 
 ---
 
-## Roadmap (high level)
+### Run checks on an example
 
-**Near-term**
-- Canonical part data model with confidence tracking
-- Supplier adapters (starting with Mouser)
-- Data completeness reporting
+```bash
+rv check ./examples/amr_parts.yaml
+```
 
-**Mid-term**
-- Candidate filtering and transparent ranking
-- Reason traces for every score contribution
+or:
 
-**Long-term**
-- Optional backend for advanced ranking
-- AI-generated explanations only (never decisions)
+```bash
+make verify
+```
 
 ---
 
-## Design principles
+### Build and run locally (no install)
 
-- Deterministic over clever
-- Explainable over optimized
-- Fail fast and loudly
-- No hidden assumptions
-- No AI in the decision loop
+```bash
+make build
+./bin/robotics-verifier-cli check ./examples/amr_basic.yaml
+```
 
-If the tool cannot explain why a part is rejected or ranked lower, it is considered broken.
+or:
+
+```bash
+go build -o ./bin/robotics-verifier-cli .
+./bin/robotics-verifier-cli check ./examples/amr_basic.yaml
+```
+
+---
+
+## CLI behavior
+
+- `INFO`: contextual notes
+- `WARN`: non‑ideal but non‑blocking
+- `ERROR`: hard violations, non‑zero exit code
+- Designed for terminals & CI; **no fluff**
+
+Typical CI usage:
+
+```yaml
+steps:
+  - name: Run hardware checks
+    run: rv check specs/amr.yaml
+```
+
+---
+
+## Current Scope & Limitations (v1)
+
+v1 is intentionally narrow. It is designed to lint early-stage mobile robots built around **DC gearmotors**, **H-bridge motor drivers**, and a **single logic rail**. The goal is to prevent category-error mistakes **before money is spent**.
+
+### ✔️ Supported in v1
+- DC motors (1 motor per driver channel)
+- H-bridge motor drivers (TB6612FNG, L298 class)
+- Single logic rail verification (`power.logic_rail`)
+- Basic electrical compatibility checks:
+  - Battery voltage vs driver logic/motor voltage ranges
+  - Motor stall current vs driver peak current
+  - Motor nominal current vs driver continuous current (with margin)
+  - MCU logic voltage vs logic rail (level shifting risk)
+- `part:` references & default value merging from parts library
+
+### ❌ Not supported yet
+- Stepper motors
+- BLDC / ESC
+- Multi-rail trees
+- Thermal/derating models
+- API-assisted part import
+- IO-level protocol arbitration
+
+### ⚠️ Assumptions (v1)
+- One motor per driver channel (DC only)
+- Zero values in YAML mean "unset" and will be filled from `part:`
+- 25 percent current margin heuristic for continuous current checks
+- Validation uses **nominal** battery voltage (not max/min chemistry curves)
+- Errors and warnings reflect deterministic rules, not probabilistic models
+
+---
+
+
+This tool is a **linter** — not a simulator and not an optimizer.  
+It focuses on correctness over completeness and prioritizes **explainable rule-based checks**.
+
+---
+
+## Roadmap (direction, not promise)
+
+- richer rule sets (AWG, derating, interface compatibility)
+- supplier adapters → canonical part model
+- KiCad boilerplates from specs
+- ROS2 scaffolding aligned to the same spec
+- assistive tooling (post-guarantee)
+
+---
+
+## Contributing
+
+- real-world example specs
+- missing rule proposals
+- feedback on naming and structure
+
+Small, surgical PRs preferred.
 
 ---
 
 ## License
+MIT. See `LICENSE`.
 
-This project is licensed under the **Mozilla Public License 2.0 (MPL 2.0)**.  
-See the `LICENSE` file for details.
+---
+
+
+## Continuous Integration (CI)
+
+This repository uses GitHub Actions to ensure the CLI is always in a working state.
+
+The pipeline performs:
+1. Go setup and build
+2. Unit tests for parts loader, resolver and rule logic
+3. Smoke test of the CLI against example specs
+
+Exit codes:
+* 0 means no issues found
+* 2 means the spec contains physical or configuration errors and the tool reported them
+* 3 or higher indicates a crash or runtime fault and CI fails
+
+CI does not fail on exit code 2 because it is the expected behavior for invalid specs. CI fails only if unit tests fail or if the CLI crashes.
+
+### Local run
+
+```
+make ci
+# or
+go build ./...
+go test ./...
+go run . validate -f examples/amr_parts.yaml || true
+```
+
+
+## Contributor License Agreement
+By contributing, you agree to the CLA in `CLA.md`.  
+This allows future relicensing or commercialization.
 
 ---
 
 ## Disclaimer
-
-RoboStack does not replace datasheets, safety analysis, or engineering judgment.  
-It is intended for **early-stage verification and decision support**.
+Robotics Verifier CLI does **not** replace datasheets, safety analysis, or engineering judgment.  
+It is intended for **early-stage verification and decision support**.  
+This is **early alpha**. Interfaces will break. Specs will evolve. Rules will change.  
+Do not use this for safety‑critical systems.

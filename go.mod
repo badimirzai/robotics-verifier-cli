@@ -1,4 +1,4 @@
-module github.com/badimirzai/robostack-cli
+module github.com/badimirzai/robotics-verifier-cli
 
 go 1.25
 

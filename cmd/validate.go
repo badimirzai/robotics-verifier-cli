@@ -4,20 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/badimirzai/robostack-cli/internal/model"
-	"github.com/badimirzai/robostack-cli/internal/output"
-	"github.com/badimirzai/robostack-cli/internal/validate"
+	"github.com/badimirzai/robotics-verifier-cli/internal/model"
+	"github.com/badimirzai/robotics-verifier-cli/internal/output"
+	"github.com/badimirzai/robotics-verifier-cli/internal/parts"
+	"github.com/badimirzai/robotics-verifier-cli/internal/resolve"
+	"github.com/badimirzai/robotics-verifier-cli/internal/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
-var validateCmd = &cobra.Command{
-	Use:   "validate -f <spec.yaml>",
-	Short: "Validate a robot spec against deterministic electrical rules",
+var checkCmd = &cobra.Command{
+	Use:     "check <spec.yaml>",
+	Aliases: []string{"validate"},
+	Args:    cobra.MaximumNArgs(1),
+	Short:   "Validate a robot spec against deterministic electrical rules",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		path, _ := cmd.Flags().GetString("file")
+		if path == "" && len(args) > 0 {
+			path = args[0]
+		}
 		if path == "" {
-			return fmt.Errorf("missing -f/--file")
+			return fmt.Errorf("missing spec file (arg or -f/--file)")
 		}
 
 		b, err := os.ReadFile(path)
@@ -25,12 +32,18 @@ var validateCmd = &cobra.Command{
 			return fmt.Errorf("read spec: %w", err)
 		}
 
-		var spec model.RobotSpec
-		if err := yaml.Unmarshal(b, &spec); err != nil {
+		var raw model.RobotSpec
+		if err := yaml.Unmarshal(b, &raw); err != nil {
 			return fmt.Errorf("parse yaml: %w", err)
 		}
 
-		rep := validate.RunAll(spec)
+		store := parts.NewStore("parts")
+		resolved, err := resolve.ResolveAll(raw, store)
+		if err != nil {
+			return fmt.Errorf("resolve spec with parts: %w", err)
+		}
+
+		rep := validate.RunAll(resolved)
 		fmt.Println(output.RenderReport(rep))
 		if rep.HasErrors() {
 			os.Exit(2) // deterministic non-zero for CI
@@ -40,6 +53,6 @@ var validateCmd = &cobra.Command{
 }
 
 func init() {
-	validateCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
-	rootCmd.AddCommand(validateCmd)
+	checkCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
+	rootCmd.AddCommand(checkCmd)
 }

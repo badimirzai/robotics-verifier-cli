@@ -1,0 +1,19 @@
+spec_version: 0.1
+
+battery:
+  voltage_nominal: 14.8
+  voltage_max: 16.8
+
+logic_rail:
+  voltage: 3.3
+  max_current: 2.0
+
+mcu:
+  part: mcus/esp32s3
+
+motor_driver:
+  part: drivers/tb6612fng
+
+motors:
+  - part: motors/generic_dc_12v_gearmotor
+    count: 2

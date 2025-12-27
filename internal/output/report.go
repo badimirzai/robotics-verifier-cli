@@ -3,12 +3,12 @@ package output
 import (
 	"strings"
 
-	"github.com/badimirzai/robostack-cli/internal/validate"
+	"github.com/badimirzai/robotics-verifier-cli/internal/validate"
 )
 
 func RenderReport(r validate.Report) string {
 	var b strings.Builder
-	b.WriteString("robostack validate\n")
+	b.WriteString("rv check\n")
 	b.WriteString("--------------\n")
 	for _, f := range r.Findings {
 		b.WriteString(string(f.Severity))

@@ -1,0 +1,6 @@
+part_id: mcus/esp32s3
+type: mcu
+name: ESP32-S3
+
+mcu:
+  logic_voltage: 3.3

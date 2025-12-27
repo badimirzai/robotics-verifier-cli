@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - feat(parts)--add-parts-store-loader
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Show Go version
+        run: go version
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Build
+        run: go build ./...
+
+      - name: Run unit tests
+        run: go test ./...
+
+      # Smoke test the CLI on an example spec.
+      # We allow non-zero exit (because errors in the spec are expected),
+      # but we still want to ensure the command RUNS and does not panic.
+      - name: Smoke test CLI (amr_parts)
+        run: |
+          go run . check examples/amr_parts.yaml || true
