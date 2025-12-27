@@ -4,22 +4,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/badimirzai/robostack-cli/internal/model"
-	"github.com/badimirzai/robostack-cli/internal/output"
-	"github.com/badimirzai/robostack-cli/internal/parts"
-	"github.com/badimirzai/robostack-cli/internal/resolve"
-	"github.com/badimirzai/robostack-cli/internal/validate"
+	"github.com/badimirzai/architon-cli/internal/model"
+	"github.com/badimirzai/architon-cli/internal/output"
+	"github.com/badimirzai/architon-cli/internal/parts"
+	"github.com/badimirzai/architon-cli/internal/resolve"
+	"github.com/badimirzai/architon-cli/internal/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
-var validateCmd = &cobra.Command{
-	Use:   "validate -f <spec.yaml>",
-	Short: "Validate a robot spec against deterministic electrical rules",
+var checkCmd = &cobra.Command{
+	Use:     "check <spec.yaml>",
+	Aliases: []string{"validate"},
+	Args:    cobra.MaximumNArgs(1),
+	Short:   "Validate a robot spec against deterministic electrical rules",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		path, _ := cmd.Flags().GetString("file")
+		if path == "" && len(args) > 0 {
+			path = args[0]
+		}
 		if path == "" {
-			return fmt.Errorf("missing -f/--file")
+			return fmt.Errorf("missing spec file (arg or -f/--file)")
 		}
 
 		b, err := os.ReadFile(path)
@@ -48,6 +53,6 @@ var validateCmd = &cobra.Command{
 }
 
 func init() {
-	validateCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
-	rootCmd.AddCommand(validateCmd)
+	checkCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
+	rootCmd.AddCommand(checkCmd)
 }

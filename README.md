@@ -27,9 +27,9 @@ Example output:
 
 ```text
 
-make validate
-go run . validate -f examples/amr_basic.yaml
-robostack validate
+make check
+go run . check examples/amr_basic.yaml
+arch check
 --------------
 INFO DRV_CHANNELS_OK: channels OK: 2 motors <= 2 driver channels
 ERROR DRV_SUPPLY_RANGE: battery 14.80V outside driver motor supply range [2.50, 13.50]V
@@ -66,19 +66,70 @@ This is a sequencing principle, not a permanent ban on ML. Trust first, automati
 ### Install
 
 ```bash
-git clone https://github.com/badimirzai/robostack-cli.git
-cd robostack-cli
+git clone https://github.com/badimirzai/architon-cli.git
+cd architon-cli
 
 # build and install the CLI
 go install ./...
 ```
 
-Make sure your `GOPATH/bin` is on your `PATH`, then you should have an `architon` binary available.
+Make sure your `GOPATH/bin` is on your `PATH`, then you should have an `architon-cli` binary available.
+Create an `arch` symlink so the CLI command matches the docs:
+
+```bash
+ln -sf "$(go env GOPATH)/bin/architon-cli" "$(go env GOPATH)/bin/arch"
+```
+
+If `arch` still runs the macOS system binary, ensure your `GOPATH/bin` appears before `/usr/bin` in `PATH`:
+
+```bash
+export PATH="$(go env GOPATH)/bin:$PATH"
+```
+
+Verify you are hitting the right binary:
+
+```bash
+command -v arch
+```
+
+To make this permanent across new terminals, add it to your shell profile once and reload:
+
+```bash
+echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+If you use zsh (default on modern macOS), use `~/.zshrc` instead:
+
+```bash
+echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
 
 ### Run validate on an example
 
 ```bash
-robostack-cli validate -f ./examples/amr_basic.yaml
+arch check ./examples/amr_basic.yaml
+```
+
+`validate` is an alias of `check`, so this works too:
+
+```bash
+arch validate ./examples/amr_basic.yaml
+```
+
+### Build and run locally (no install)
+
+```bash
+make build
+./bin/architon-cli check ./examples/amr_basic.yaml
+```
+
+`go build ./...` only compiles packages; it does not place an `arch` binary in your `PATH`. Use `make build`, or build directly:
+
+```bash
+go build -o ./bin/architon-cli .
+./bin/architon-cli check ./examples/amr_basic.yaml
 ```
 
 Example output:
@@ -107,7 +158,7 @@ Typical CI usage:
 ```yaml
 steps:
   - name: Run hardware checks
-    run: Architon check specs/amr.yaml
+    run: arch check specs/amr.yaml
 ```
 
 ---

@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "robostack",
+	Use:   "arch",
 	Short: "Robotics stack verifier (BOM + electrical sanity checks)",
 }
 

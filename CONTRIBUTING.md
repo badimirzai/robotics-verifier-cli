@@ -1,8 +1,8 @@
-# Contributing to RoboStack
+# Contributing to Architon
 
-Thanks for your interest in contributing to RoboStack.
+Thanks for your interest in contributing to Architon.
 
-RoboStack is an open-core project focused on deterministic, explainable
+Architon is an open-core project focused on deterministic, explainable
 verification of robotics hardware stacks. Contributions that improve
 correctness, clarity, and robustness are especially welcome.
 
@@ -45,7 +45,7 @@ You retain copyright to your contributions.
 
 ## Scope and direction
 
-RoboStack maintains a strict separation between:
+Architon maintains a strict separation between:
 - the open verification core
 - potential future extensions and services
 

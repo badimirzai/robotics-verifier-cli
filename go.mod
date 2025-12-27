@@ -1,4 +1,4 @@
-module github.com/badimirzai/robostack-cli
+module github.com/badimirzai/architon-cli
 
 go 1.25
 

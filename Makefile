@@ -1,15 +1,15 @@
-# robostack-cli Makefile
-BINARY := robostack
+# architon-cli Makefile
+BINARY := architon-cli
 PKG := ./...
 GOFLAGS :=
 
 # Optional overrides:
-#   make run ARGS="validate -f examples/amr_basic.yaml"
-#   make validate FILE=examples/amr_basic.yaml
+#   make run ARGS="check examples/amr_basic.yaml"
+#   make check FILE=examples/amr_basic.yaml
 ARGS ?=
-FILE ?= examples/amr_basic.yaml
+FILE ?= examples/amr_parts.yaml
 
-.PHONY: help tidy fmt vet test lint build install run validate clean
+.PHONY: help tidy fmt vet test lint build install run check validate clean
 
 help:
 	@echo "Targets:"
@@ -19,16 +19,17 @@ help:
 	@echo "  test       - run unit tests"
 	@echo "  lint       - golangci-lint (if installed)"
 	@echo "  build      - build binary into ./bin/$(BINARY)"
-	@echo "  install    - install binary into $(shell go env GOPATH)/bin"
+	@echo "  install    - install binary into $(shell go env GOPATH)/bin (and arch symlink)"
 	@echo "  run        - run CLI (requires ARGS="...")"
-	@echo "  validate   - run validate on FILE (default: $(FILE))"
+	@echo "  check      - run check on FILE (default: $(FILE))"
+	@echo "  validate   - alias for check"
 	@echo "  clean      - remove ./bin"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make validate"
-	@echo "  make validate FILE=examples/amr_basic.yaml"
-	@echo "  make run ARGS=\"validate -f examples/amr_basic.yaml\""
-	@echo "  make build && ./bin/$(BINARY) validate -f examples/amr_basic.yaml"
+	@echo "  make check"
+	@echo "  make check FILE=examples/amr_basic.yaml"
+	@echo "  make run ARGS=\"check examples/amr_basic.yaml\""
+	@echo "  make build && ./bin/$(BINARY) check examples/amr_basic.yaml"
 
 tidy:
 	go mod tidy
@@ -51,17 +52,22 @@ build:
 
 install:
 	go install $(GOFLAGS) .
+	ln -sf "$$(go env GOPATH)/bin/$(BINARY)" "$$(go env GOPATH)/bin/arch"
 	@echo ""
 	@echo "Installed to: $$(go env GOPATH)/bin/$(BINARY)"
-	@echo "If '$(BINARY)' is not found, add this to your PATH:"
+	@echo "Symlinked: $$(go env GOPATH)/bin/arch"
+	@echo "If 'arch' is not found, add this to your PATH:"
 	@echo "  export PATH=\"$$(go env GOPATH)/bin:$$PATH\""
 
 run:
-	@if [ -z "$(strip $(ARGS))" ]; then 		echo "ERROR: ARGS is required."; 		echo "Example: make run ARGS=\"validate -f examples/amr_basic.yaml\""; 		exit 2; 	fi
+	@if [ -z "$(strip $(ARGS))" ]; then 		echo "ERROR: ARGS is required."; 		echo "Example: make run ARGS=\"check examples/amr_basic.yaml\""; 		exit 2; 	fi
 	go run . $(ARGS)
 
+check:
+	go run . check $(FILE)
+
 validate:
-	go run . validate -f $(FILE)
+	go run . check $(FILE)
 
 clean:
 	rm -rf bin

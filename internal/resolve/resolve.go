@@ -3,8 +3,8 @@ package resolve
 import (
 	"fmt"
 
-	"github.com/badimirzai/robostack-cli/internal/model"
-	"github.com/badimirzai/robostack-cli/internal/parts"
+	"github.com/badimirzai/architon-cli/internal/model"
+	"github.com/badimirzai/architon-cli/internal/parts"
 )
 
 // ResolveAll takes a raw RobotSpec (possibly with part references and missing values)
