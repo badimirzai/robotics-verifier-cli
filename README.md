@@ -1,7 +1,8 @@
-# Architon
+# Robotics Verifier CLI
+Project codename: Architon (tentative, may change).
 
 **Specification layer for robot hardware**  
-Architon turns your robot's electrical architecture into a machine‑checkable spec.  
+Robotics Verifier CLI turns your robot's electrical architecture into a machine‑checkable spec.  
 It replaces scattered spreadsheets and implicit assumptions with structured YAML verified by a rule engine before you ever order parts.
 
 Deterministic today by design. Assistive AI can enter later when guarantees exist.
@@ -11,7 +12,7 @@ Deterministic today by design. Assistive AI can enter later when guarantees exis
 ## Why this exists
 
 Most robotics failures start before firmware runs: mismatched voltages, undersized current paths, logic‑level mistakes.  
-Architon provides a **contract** for electrical architecture so these failures surface early, locally and in CI.
+Robotics Verifier CLI provides a **contract** for electrical architecture so these failures surface early, locally and in CI.
 
 ---
 
@@ -26,19 +27,13 @@ Architon provides a **contract** for electrical architecture so these failures s
 Example output:
 
 ```text
-
-make check
-go run . check examples/amr_basic.yaml
-arch check
+rv check
 --------------
 INFO DRV_CHANNELS_OK: channels OK: 2 motors <= 2 driver channels
 ERROR DRV_SUPPLY_RANGE: battery 14.80V outside driver motor supply range [2.50, 13.50]V
 ERROR DRV_PEAK_LT_STALL: driver peak 3.20A < motor DC gearmotor stall 5.00A (per channel)
 WARN DRV_CONT_LOW_MARGIN: driver continuous 1.20A may be low for motor DC gearmotor nominal 1.50A (want >= 1.88A)
 INFO RAIL_BUDGET_NOTE: logic rail budget set to 2.00A (v1 does not estimate MCU+driver logic draw yet)
-
-exit status 2
-make: *** [validate] Error 1
 ```
 
 ---
@@ -50,7 +45,7 @@ make: *** [validate] Error 1
 3. **Assistants (future)** – optional helpers that operate *on top* once guarantees exist.  
    They **do not replace** the rule engine. AI will never silently assert correctness.
 
-This is a sequencing principle, not a permanent ban on ML. Trust first, automation second.
+This is a sequencing principle: **trust first, automation second.**
 
 ---
 
@@ -61,88 +56,54 @@ This is a sequencing principle, not a permanent ban on ML. Trust first, automati
 - Go **1.25.5** or newer: https://go.dev/dl/
 - GOPATH/bin added to your PATH
 
+---
+
 ## Quick start
 
-### Install
-
 ```bash
-git clone https://github.com/badimirzai/architon-cli.git
-cd architon-cli
+git clone https://github.com/badimirzai/robotics-verifier-cli.git
+cd robotics-verifier-cli
 
 # build and install the CLI
-go install ./...
+make build
+make install     # installs robotics-verifier-cli and rv symlink
 ```
 
-Make sure your `GOPATH/bin` is on your `PATH`, then you should have an `architon-cli` binary available.
-Create an `arch` symlink so the CLI command matches the docs:
+Verify install:
 
 ```bash
-ln -sf "$(go env GOPATH)/bin/architon-cli" "$(go env GOPATH)/bin/arch"
+rv --help
 ```
 
-If `arch` still runs the macOS system binary, ensure your `GOPATH/bin` appears before `/usr/bin` in `PATH`:
+---
+
+### Run checks on an example
 
 ```bash
-export PATH="$(go env GOPATH)/bin:$PATH"
+rv check ./examples/amr_parts.yaml
 ```
 
-Verify you are hitting the right binary:
+or:
 
 ```bash
-command -v arch
+make verify
 ```
 
-To make this permanent across new terminals, add it to your shell profile once and reload:
-
-```bash
-echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-If you use zsh (default on modern macOS), use `~/.zshrc` instead:
-
-```bash
-echo 'export PATH="$(go env GOPATH)/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-### Run validate on an example
-
-```bash
-arch check ./examples/amr_basic.yaml
-```
-
-`validate` is an alias of `check`, so this works too:
-
-```bash
-arch validate ./examples/amr_basic.yaml
-```
+---
 
 ### Build and run locally (no install)
 
 ```bash
 make build
-./bin/architon-cli check ./examples/amr_basic.yaml
+./bin/robotics-verifier-cli check ./examples/amr_basic.yaml
 ```
 
-`go build ./...` only compiles packages; it does not place an `arch` binary in your `PATH`. Use `make build`, or build directly:
+or:
 
 ```bash
-go build -o ./bin/architon-cli .
-./bin/architon-cli check ./examples/amr_basic.yaml
+go build -o ./bin/robotics-verifier-cli .
+./bin/robotics-verifier-cli check ./examples/amr_basic.yaml
 ```
-
-Example output:
-
-```text
-ERROR DRV_SUPPLY_RANGE: battery 14.80V outside driver motor supply range [2.50, 13.50]V
-ERROR DRV_PEAK_LT_STALL: driver peak 3.20A < motor DC gearmotor stall 5.00A (per channel)
-WARN DRV_CONT_LOW_MARGIN: driver continuous 1.20A may be low for motor DC gearmotor nominal 1.50A (want >= 1.88A)
-INFO RAIL_BUDGET_NOTE: logic rail budget set to 2.00A (v1 does not estimate MCU+driver logic draw yet)
-```
-
-Non-zero exit codes are used when there is at least one `ERROR`, so you can plug this straight into CI pipelines.
-
 
 ---
 
@@ -151,21 +112,21 @@ Non-zero exit codes are used when there is at least one `ERROR`, so you can plug
 - `INFO`: contextual notes
 - `WARN`: non‑ideal but non‑blocking
 - `ERROR`: hard violations, non‑zero exit code
-- Designed for terminals and CI; no spinner fluff or hidden state
+- Designed for terminals & CI; **no fluff**
 
 Typical CI usage:
 
 ```yaml
 steps:
   - name: Run hardware checks
-    run: arch check specs/amr.yaml
+    run: rv check specs/amr.yaml
 ```
 
 ---
 
 ## Current Scope & Limitations (v1)
 
-Architon v1 is intentionally narrow. It is designed to lint early-stage mobile robots built around **DC gearmotors**, **H-bridge motor drivers**, and a **single logic rail**. The goal is to prevent category-error mistakes before money is spent.
+v1 is intentionally narrow. It is designed to lint early-stage mobile robots built around **DC gearmotors**, **H-bridge motor drivers**, and a **single logic rail**. The goal is to prevent category-error mistakes **before money is spent**.
 
 ### ✔️ Supported in v1
 - DC motors (1 motor per driver channel)
@@ -176,16 +137,15 @@ Architon v1 is intentionally narrow. It is designed to lint early-stage mobile r
   - Motor stall current vs driver peak current
   - Motor nominal current vs driver continuous current (with margin)
   - MCU logic voltage vs logic rail (level shifting risk)
-- `part:` references and default value merging from the parts library
+- `part:` references & default value merging from parts library
 
-### ❌ Not supported (yet)
-- Stepper motors (2-phase, 4-phase)
-- BLDC / ESC drivers (3-phase)
-- Multi-rail power trees (24 V bus, 5 V logic, 3.3 V sensor rails)
-- Thermal/derating or PCB trace current modeling
-- Battery chemistry discharge curves, IR drop modeling
-- Integration with Mouser/DigiKey/Octopart APIs (planned v2)
-- IO-level protocol compatibility (UART/SPI/I2C voltage domain arbitration)
+### ❌ Not supported yet
+- Stepper motors
+- BLDC / ESC
+- Multi-rail trees
+- Thermal/derating models
+- API-assisted part import
+- IO-level protocol arbitration
 
 ### ⚠️ Assumptions (v1)
 - One motor per driver channel (DC only)
@@ -196,51 +156,46 @@ Architon v1 is intentionally narrow. It is designed to lint early-stage mobile r
 
 ---
 
-Architon v1 is a **linter** — not a simulator and not an optimizer.  
-It focuses on correctness over completeness and prioritizes **explainable rule-based checks**.  
-Future versions (v2+) will expand into multi-rail systems, API-assisted part selection, and HIL-oriented verification workflows.
+---
+
+This tool is a **linter** — not a simulator and not an optimizer.  
+It focuses on correctness over completeness and prioritizes **explainable rule-based checks**.
 
 ---
 
-## Roadmap
+## Roadmap (direction, not promise)
 
-This is **not a promise**, it is direction. Order and scope may change.
-
-- richer rule sets (AWG, simple derating, interface compatibility)
-- supplier adapters → canonical part model (surface missing fields)
+- richer rule sets (AWG, derating, interface compatibility)
+- supplier adapters → canonical part model
 - KiCad boilerplates from specs
 - ROS2 scaffolding aligned to the same spec
-- assistive tooling for part selection / impact analysis **on top** of rules
-
-> Everything here remains deterministic first.  
-> AI/ML may appear once it can provide value without eroding guarantees.
+- assistive tooling (post-guarantee)
 
 ---
 
 ## Contributing
 
-Focus areas right now:
-
 - real-world example specs
 - missing rule proposals
 - feedback on naming and structure
 
-Small, surgical PRs are preferred.
+Small, surgical PRs preferred.
 
 ---
 
 ## License
-This project is open source under the MIT license. See `LICENSE` for details.
+MIT. See `LICENSE`.
 
-## Contributions
-By contributing, you agree to the Contributor License Agreement in `CLA.md`.
-This allows the project to relicense or commercialize the work in the future.
+---
+
+## Contributor License Agreement
+By contributing, you agree to the CLA in `CLA.md`.  
+This allows future relicensing or commercialization.
 
 ---
 
 ## Disclaimer
-Archeon does not replace datasheets, safety analysis, or engineering judgment.  
-It is intended for **early-stage verification and decision support**.
-This is **early alpha**.  
-Interfaces will break, specs will evolve, and rules will change.  
-Do not depend on this for safety‑critical systems yet.
+Robotics Verifier CLI does **not** replace datasheets, safety analysis, or engineering judgment.  
+It is intended for **early-stage verification and decision support**.  
+This is **early alpha**. Interfaces will break. Specs will evolve. Rules will change.  
+Do not use this for safety‑critical systems.

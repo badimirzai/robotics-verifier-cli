@@ -1,4 +1,4 @@
-# Contributing to Architon CLI
+# Contributing to Robotics verifier CLI
 
 Thank you for considering contributing. This project is early stage and focused on correctness, clarity, and predictable behavior.
 
