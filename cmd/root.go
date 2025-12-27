@@ -8,8 +8,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "arch",
-	Short: "Robotics stack verifier (BOM + electrical sanity checks)",
+	Use:     "rv",
+	Short:   "Robotics Verifier CLI",
+	Long:    "Robotics Verifier CLI – early-stage electrical architecture checks for robotics projects.",
+	Aliases: []string{"robotics-verifier-cli"},
 }
 
 func Execute() {
