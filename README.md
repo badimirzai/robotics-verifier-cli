@@ -1,5 +1,8 @@
 # Robotics Verifier CLI
-[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml)
+[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml)
+
+[![Release](https://img.shields.io/github/v/release/badimirzai/robotics-verifier-cli?label=release)](https://github.com/badimirzai/robotics-verifier-cli/releases)
+
 **The Specification layer for robotics hardware.**  
 Robotics Verifier CLI turns your robot's electrical architecture into a machine‑checkable spec.  
 It replaces scattered spreadsheets and implicit assumptions with structured YAML verified by a rule engine before you ever order parts.
