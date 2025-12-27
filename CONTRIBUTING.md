@@ -1,55 +1,69 @@
-# Contributing to Architon
+# Contributing to Architon CLI
 
-Thanks for your interest in contributing to Architon.
+Thank you for considering contributing. This project is early stage and focused on correctness, clarity, and predictable behavior.
 
-Architon is an open-core project focused on deterministic, explainable
-verification of robotics hardware stacks. Contributions that improve
-correctness, clarity, and robustness are especially welcome.
+## Ground Rules
 
----
+- By contributing, you agree to the MIT License and the CLA in `CLA.md`.
+- All contributions must be your own work.
+- Do not submit code you cannot certify for commercial use.
+- No feature creep. Open an issue before building new features.
+- Keep scope tight and avoid premature abstractions.
 
-## How to contribute
+## Code Expectations
 
-You can contribute by:
-- Reporting bugs
-- Improving documentation
-- Adding validation rules
-- Extending existing checks
-- Adding examples and tests
+- Keep functions small and single purpose.
+- Write clear validation logic with explicit error messages.
+- Favor directness over cleverness.
+- No unexplained magic constants. Inline comments if necessary.
+- Consistent naming: verbs for commands, nouns for data structures.
 
-Please open an issue before starting large changes.
+## Tests
 
----
+- Every contribution that changes behavior must have tests.
+- Tests must be deterministic and not rely on remote resources.
+- If you fix a bug, write a test that fails before the fix and passes after.
 
-## Code quality
+## Pull Requests
 
-Contributions should:
-- Be deterministic and reproducible
-- Avoid introducing hidden assumptions
-- Prefer explicit checks over heuristics
-- Include tests where appropriate
-- Keep outputs explainable
+1. Create a branch from `main`.
+2. Ensure all tests pass locally.
+3. Add or update relevant documentation.
+4. Keep diffs minimal and focused on one concern.
+5. Request review via PR. Do not merge without approval.
 
-If a rule cannot be explained, it should not exist.
+## Commit Style
 
----
+- Use clear prefixes:
+  - `feat:` new feature
+  - `fix:` bug fix
+  - `docs:` documentation changes
+  - `test:` tests only
+  - `refactor:` structural changes without behavior change
+- Keep messages brief and to the point.
 
-## License
+## Communication
 
-By contributing to this repository, you agree that your contributions
-will be licensed under the Mozilla Public License 2.0 (MPL 2.0).
+- Open an issue for discussions larger than a few lines of change.
+- Stay civil and technical. Critique code, not people.
+- Decisions prioritize stability, clarity, and maintainability.
 
-You retain copyright to your contributions.
+## Licensing
 
----
+- All contributions are under MIT License.
+- CLA must be signed for PRs to be accepted.
+- You retain copyright to your contributions.
 
-## Scope and direction
+## Rejection Criteria
 
-Architon maintains a strict separation between:
-- the open verification core
-- potential future extensions and services
+Your PR will be rejected if:
 
-Contributions should focus on improving the open core.
+- It increases complexity without clear benefit.
+- It introduces magic behavior or silent failures.
+- It duplicates existing functionality without justification.
+- It adds heavy external dependencies without approval.
+- It solves a problem that is not validated or discussed.
 
-If you are unsure whether a change fits the project’s scope, open an issue
-to discuss it first.
+## Final Note
+
+This project is evolving. Expect rules to refine over time. Drive the project forward with clarity and discipline.
