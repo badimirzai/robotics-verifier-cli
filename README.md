@@ -112,6 +112,45 @@ steps:
 
 ---
 
+## Current Scope & Limitations (v1)
+
+Architon v1 is intentionally narrow. It is designed to lint early-stage mobile robots built around **DC gearmotors**, **H-bridge motor drivers**, and a **single logic rail**. The goal is to prevent category-error mistakes before money is spent.
+
+### ✔️ Supported in v1
+- DC motors (1 motor per driver channel)
+- H-bridge motor drivers (TB6612FNG, L298 class)
+- Single logic rail verification (`power.logic_rail`)
+- Basic electrical compatibility checks:
+  - Battery voltage vs driver logic/motor voltage ranges
+  - Motor stall current vs driver peak current
+  - Motor nominal current vs driver continuous current (with margin)
+  - MCU logic voltage vs logic rail (level shifting risk)
+- `part:` references and default value merging from the parts library
+
+### ❌ Not supported (yet)
+- Stepper motors (2-phase, 4-phase)
+- BLDC / ESC drivers (3-phase)
+- Multi-rail power trees (24 V bus, 5 V logic, 3.3 V sensor rails)
+- Thermal/derating or PCB trace current modeling
+- Battery chemistry discharge curves, IR drop modeling
+- Integration with Mouser/DigiKey/Octopart APIs (planned v2)
+- IO-level protocol compatibility (UART/SPI/I2C voltage domain arbitration)
+
+### ⚠️ Assumptions (v1)
+- One motor per driver channel (DC only)
+- Zero values in YAML mean "unset" and will be filled from `part:`
+- 25 percent current margin heuristic for continuous current checks
+- Validation uses **nominal** battery voltage (not max/min chemistry curves)
+- Errors and warnings reflect deterministic rules, not probabilistic models
+
+---
+
+Architon v1 is a **linter** — not a simulator and not an optimizer.  
+It focuses on correctness over completeness and prioritizes **explainable rule-based checks**.  
+Future versions (v2+) will expand into multi-rail systems, API-assisted part selection, and HIL-oriented verification workflows.
+
+---
+
 ## Roadmap
 
 This is **not a promise**, it is direction. Order and scope may change.
@@ -140,9 +179,11 @@ Small, surgical PRs are preferred.
 ---
 
 ## License
+This project is open source under the MIT license. See `LICENSE` for details.
 
-This project is licensed under **MPL 2.0**.  
-See the `LICENSE` file for details.
+## Contributions
+By contributing, you agree to the Contributor License Agreement in `CLA.md`.
+This allows the project to relicense or commercialize the work in the future.
 
 ---
 
