@@ -98,7 +98,7 @@ func (s *Store) LoadMCU(partID string) (MCUPartFile, error) {
 
 // loadPart is a small helper to read and unmarshal a YAML file.
 func (s *Store) loadPart(partID string, out any) error {
-	path := filepath.Join(s.BaseDir, "parts", filepath.FromSlash(partID)+".yaml")
+	path := filepath.Join(s.BaseDir, filepath.FromSlash(partID)+".yaml")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err

@@ -6,6 +6,8 @@ import (
 
 	"github.com/badimirzai/robostack-cli/internal/model"
 	"github.com/badimirzai/robostack-cli/internal/output"
+	"github.com/badimirzai/robostack-cli/internal/parts"
+	"github.com/badimirzai/robostack-cli/internal/resolve"
 	"github.com/badimirzai/robostack-cli/internal/validate"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -25,12 +27,18 @@ var validateCmd = &cobra.Command{
 			return fmt.Errorf("read spec: %w", err)
 		}
 
-		var spec model.RobotSpec
-		if err := yaml.Unmarshal(b, &spec); err != nil {
+		var raw model.RobotSpec
+		if err := yaml.Unmarshal(b, &raw); err != nil {
 			return fmt.Errorf("parse yaml: %w", err)
 		}
 
-		rep := validate.RunAll(spec)
+		store := parts.NewStore("parts")
+		resolved, err := resolve.ResolveAll(raw, store)
+		if err != nil {
+			return fmt.Errorf("resolve spec with parts: %w", err)
+		}
+
+		rep := validate.RunAll(resolved)
 		fmt.Println(output.RenderReport(rep))
 		if rep.HasErrors() {
 			os.Exit(2) // deterministic non-zero for CI
