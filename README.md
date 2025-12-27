@@ -1,4 +1,5 @@
 # Robotics Verifier CLI
+[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml)
 **The Specification layer for robotics hardware.**  
 Robotics Verifier CLI turns your robot's electrical architecture into a machine‑checkable spec.  
 It replaces scattered spreadsheets and implicit assumptions with structured YAML verified by a rule engine before you ever order parts.
@@ -186,6 +187,34 @@ Small, surgical PRs preferred.
 MIT. See `LICENSE`.
 
 ---
+
+
+## Continuous Integration (CI)
+
+This repository uses GitHub Actions to ensure the CLI is always in a working state.
+
+The pipeline performs:
+1. Go setup and build
+2. Unit tests for parts loader, resolver and rule logic
+3. Smoke test of the CLI against example specs
+
+Exit codes:
+* 0 means no issues found
+* 2 means the spec contains physical or configuration errors and the tool reported them
+* 3 or higher indicates a crash or runtime fault and CI fails
+
+CI does not fail on exit code 2 because it is the expected behavior for invalid specs. CI fails only if unit tests fail or if the CLI crashes.
+
+### Local run
+
+```
+make ci
+# or
+go build ./...
+go test ./...
+go run . validate -f examples/amr_parts.yaml || true
+```
+
 
 ## Contributor License Agreement
 By contributing, you agree to the CLA in `CLA.md`.  
