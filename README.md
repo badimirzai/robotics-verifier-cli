@@ -1,11 +1,11 @@
 # Robotics Verifier CLI
-Project codename: Architon (tentative, may change).
-
-**Specification layer for robot hardware**  
+**The Specification layer for robotics hardware.**  
 Robotics Verifier CLI turns your robot's electrical architecture into a machine‑checkable spec.  
 It replaces scattered spreadsheets and implicit assumptions with structured YAML verified by a rule engine before you ever order parts.
 
 Deterministic today by design. Assistive AI can enter later when guarantees exist.
+
+Project codename: Architon (tentative, may change).
 
 ---
 
@@ -156,7 +156,6 @@ v1 is intentionally narrow. It is designed to lint early-stage mobile robots bui
 
 ---
 
----
 
 This tool is a **linter** — not a simulator and not an optimizer.  
 It focuses on correctness over completeness and prioritizes **explainable rule-based checks**.
