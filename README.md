@@ -1,5 +1,5 @@
 # Robotics Verifier CLI
-[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yml)
+[![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml)
 
 [![Release](https://img.shields.io/github/v/release/badimirzai/robotics-verifier-cli?label=release)](https://github.com/badimirzai/robotics-verifier-cli/releases)
 
