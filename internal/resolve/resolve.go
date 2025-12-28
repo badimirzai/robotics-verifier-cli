@@ -50,7 +50,7 @@ func resolveMCU(in model.MCU, store *parts.Store) (model.MCU, error) {
 		}
 
 		if out.LogicVoltageV == 0 {
-			out.LogicVoltageV = p.MCU.LogicVoltage
+			out.LogicVoltageV = p.MCU.LogicVoltageV
 		}
 		if out.Name == "" {
 			out.Name = p.Name
@@ -77,22 +77,22 @@ func resolveDriver(in model.MotorDriver, store *parts.Store) (model.MotorDriver,
 			out.Channels = p.MotorDriver.Channels
 		}
 		if out.MotorSupplyMinV == 0 {
-			out.MotorSupplyMinV = p.MotorDriver.MotorVoltageMin
+			out.MotorSupplyMinV = p.MotorDriver.MotorSupplyMinV
 		}
 		if out.MotorSupplyMaxV == 0 {
-			out.MotorSupplyMaxV = p.MotorDriver.MotorVoltageMax
+			out.MotorSupplyMaxV = p.MotorDriver.MotorSupplyMaxV
 		}
 		if out.LogicVoltageMinV == 0 {
-			out.LogicVoltageMinV = p.MotorDriver.LogicVoltageMin
+			out.LogicVoltageMinV = p.MotorDriver.LogicVoltageMinV
 		}
 		if out.LogicVoltageMaxV == 0 {
-			out.LogicVoltageMaxV = p.MotorDriver.LogicVoltageMax
+			out.LogicVoltageMaxV = p.MotorDriver.LogicVoltageMaxV
 		}
 		if out.ContinuousPerChA == 0 {
-			out.ContinuousPerChA = p.MotorDriver.CurrentContinuous
+			out.ContinuousPerChA = p.MotorDriver.ContinuousPerChA
 		}
 		if out.PeakPerChA == 0 {
-			out.PeakPerChA = p.MotorDriver.CurrentPeak
+			out.PeakPerChA = p.MotorDriver.PeakPerChA
 		}
 		if out.Name == "" {
 			out.Name = p.Name
@@ -101,16 +101,16 @@ func resolveDriver(in model.MotorDriver, store *parts.Store) (model.MotorDriver,
 
 	// Sanity checks after merging
 	if out.Channels <= 0 {
-		return model.MotorDriver{}, fmt.Errorf("driver.channels must be > 0 after resolving")
+		return model.MotorDriver{}, fmt.Errorf("motor_driver.channels must be > 0 after resolving")
 	}
 	if out.MotorSupplyMinV == 0 || out.MotorSupplyMaxV == 0 {
-		return model.MotorDriver{}, fmt.Errorf("driver motor supply range missing after resolving")
+		return model.MotorDriver{}, fmt.Errorf("motor_driver.motor_supply_min_v and motor_driver.motor_supply_max_v missing after resolving")
 	}
 	if out.LogicVoltageMinV == 0 || out.LogicVoltageMaxV == 0 {
-		return model.MotorDriver{}, fmt.Errorf("driver logic voltage range missing after resolving")
+		return model.MotorDriver{}, fmt.Errorf("motor_driver.logic_voltage_min_v and motor_driver.logic_voltage_max_v missing after resolving")
 	}
 	if out.PeakPerChA == 0 {
-		return model.MotorDriver{}, fmt.Errorf("driver.peak_per_channel_a missing after resolving")
+		return model.MotorDriver{}, fmt.Errorf("motor_driver.peak_per_channel_a missing after resolving")
 	}
 
 	return out, nil
@@ -126,10 +126,10 @@ func resolveMotor(in model.Motor, store *parts.Store) (model.Motor, error) {
 		}
 
 		if out.NominalCurrentA == 0 {
-			out.NominalCurrentA = p.Motor.NominalCurrent
+			out.NominalCurrentA = p.Motor.NominalCurrentA
 		}
 		if out.StallCurrentA == 0 {
-			out.StallCurrentA = p.Motor.StallCurrent
+			out.StallCurrentA = p.Motor.StallCurrentA
 		}
 		if out.Name == "" {
 			out.Name = p.Name
@@ -137,10 +137,10 @@ func resolveMotor(in model.Motor, store *parts.Store) (model.Motor, error) {
 	}
 
 	if out.Count <= 0 {
-		return model.Motor{}, fmt.Errorf("motor.count must be > 0")
+		return model.Motor{}, fmt.Errorf("motors[].count must be > 0")
 	}
 	if out.StallCurrentA == 0 {
-		return model.Motor{}, fmt.Errorf("motor.stall_current_a missing after resolving")
+		return model.Motor{}, fmt.Errorf("motors[].stall_current_a missing after resolving")
 	}
 
 	return out, nil

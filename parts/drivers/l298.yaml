@@ -7,13 +7,13 @@ motor_driver:
   channels: 2
 
   # Motor supply (Vs)
-  motor_voltage_min: 5.0
-  motor_voltage_max: 46.0
+  motor_supply_min_v: 5.0
+  motor_supply_max_v: 46.0
 
   # Logic supply (Vss) -> 5V logic requirement
-  logic_voltage_min: 5.0
-  logic_voltage_max: 7.0
+  logic_voltage_min_v: 5.0
+  logic_voltage_max_v: 7.0
 
   # Conservative thermal limits
-  current_continuous: 1.0
-  current_peak: 2.0
+  continuous_per_channel_a: 1.0
+  peak_per_channel_a: 2.0

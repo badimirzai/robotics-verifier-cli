@@ -33,8 +33,12 @@ var checkCmd = &cobra.Command{
 		}
 
 		var raw model.RobotSpec
-		if err := yaml.Unmarshal(b, &raw); err != nil {
+		var doc yaml.Node
+		if err := yaml.Unmarshal(b, &doc); err != nil {
 			return fmt.Errorf("parse yaml: %w", err)
+		}
+		if err := doc.Decode(&raw); err != nil {
+			return fmt.Errorf("decode yaml: %w", err)
 		}
 
 		store := parts.NewStore("parts")
@@ -43,7 +47,8 @@ var checkCmd = &cobra.Command{
 			return fmt.Errorf("resolve spec with parts: %w", err)
 		}
 
-		rep := validate.RunAll(resolved)
+		locs := buildLocationMap(path, &doc)
+		rep := validate.RunAll(resolved, locs)
 		fmt.Println(output.RenderReport(rep))
 		if rep.HasErrors() {
 			os.Exit(2) // deterministic non-zero for CI
@@ -55,4 +60,50 @@ var checkCmd = &cobra.Command{
 func init() {
 	checkCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
 	rootCmd.AddCommand(checkCmd)
+}
+
+func buildLocationMap(path string, doc *yaml.Node) map[string]validate.Location {
+	locs := make(map[string]validate.Location)
+
+	var walk func(n *yaml.Node, prefix string)
+	walk = func(n *yaml.Node, prefix string) {
+		switch n.Kind {
+		case yaml.DocumentNode:
+			for _, child := range n.Content {
+				walk(child, prefix)
+			}
+		case yaml.MappingNode:
+			for i := 0; i+1 < len(n.Content); i += 2 {
+				key := n.Content[i]
+				val := n.Content[i+1]
+				if key.Kind != yaml.ScalarNode {
+					continue
+				}
+				next := key.Value
+				if prefix != "" {
+					next = prefix + "." + key.Value
+				}
+				locs[next] = validate.Location{File: path, Line: key.Line}
+				if val.Kind == yaml.ScalarNode {
+					locs[next] = validate.Location{File: path, Line: val.Line}
+				}
+				walk(val, next)
+			}
+		case yaml.SequenceNode:
+			for i, item := range n.Content {
+				next := fmt.Sprintf("%s[%d]", prefix, i)
+				locs[next] = validate.Location{File: path, Line: item.Line}
+				if item.Kind == yaml.ScalarNode {
+					locs[next] = validate.Location{File: path, Line: item.Line}
+				}
+				walk(item, next)
+			}
+		}
+	}
+
+	if doc != nil {
+		walk(doc, "")
+	}
+
+	return locs
 }

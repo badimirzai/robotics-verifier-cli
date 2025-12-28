@@ -3,9 +3,9 @@ name: "amr-basic"
 power:
   battery:
     chemistry: "Li-ion"
-    voltage_v: 14.8
+    voltage_v: 12.8
     max_current_a: 20
-  rail:
+  logic_rail:
     voltage_v: 3.3
     max_current_a: 2
 
@@ -14,7 +14,7 @@ mcu:
   logic_voltage_v: 3.3
   max_gpio_current_ma: 20
 
-driver:
+motor_driver:
   name: "TB6612FNG-like"
   motor_supply_min_v: 2.5
   motor_supply_max_v: 13.5
@@ -29,5 +29,5 @@ motors:
     count: 2
     voltage_min_v: 6
     voltage_max_v: 12
-    stall_current_a: 5.0
-    nominal_current_a: 1.5
+    stall_current_a: 2.5
+    nominal_current_a: 0.9
