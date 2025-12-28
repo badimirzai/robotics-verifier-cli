@@ -19,8 +19,9 @@ This CLI provides a **contract** for electrical architecture so these failures s
 ![Architecture Overview](./assets/rvcli_architecture.png)
 
 
-[▶️ Watch Demo Video (40s)](./assets/demo.mov)
-![alt text](./assets/thumbnail.png)
+![alt text](./assets/demo.gif)
+[▶️ Watch full quality demo (MP4)](./assets/demo.mov)
+
 ---
 
 ## What it does today
