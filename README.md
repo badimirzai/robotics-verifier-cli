@@ -16,7 +16,7 @@ Most robotics failures start **before firmware runs**: mismatched voltages, unde
 This CLI provides a **contract** for electrical architecture so these failures surface early, locally and in CI.
 
 
-![Architecture Overview](./rvcli_architecture.png)
+![Architecture Overview](./assets/rvcli_architecture.png)
 
 
 ---
