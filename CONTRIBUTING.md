@@ -1,69 +1,80 @@
-# Contributing to Robotics verifier CLI
+# Contributing
 
-Thank you for considering contributing. This project is early stage and focused on correctness, clarity, and predictable behavior.
+Thanks for your interest in improving Robotics Verifier CLI.
+This project aims to provide deterministic, auditable checks for robotics hardware specs.
 
-## Ground Rules
+---
 
-- By contributing, you agree to the MIT License and the CLA in `CLA.md`.
-- All contributions must be your own work.
-- Do not submit code you cannot certify for commercial use.
-- No feature creep. Open an issue before building new features.
-- Keep scope tight and avoid premature abstractions.
+## Legal Requirement (Read First)
 
-## Code Expectations
+By contributing, you confirm that you:
 
-- Keep functions small and single purpose.
-- Write clear validation logic with explicit error messages.
-- Favor directness over cleverness.
-- No unexplained magic constants. Inline comments if necessary.
-- Consistent naming: verbs for commands, nouns for data structures.
+- License your contribution under Apache-2.0
+- Agree to the terms in CLA.md (relicensing and commercial use allowed)
+- Have the right to submit the code
 
-## Tests
+If you do not agree, do not contribute.
 
-- Every contribution that changes behavior must have tests.
-- Tests must be deterministic and not rely on remote resources.
-- If you fix a bug, write a test that fails before the fix and passes after.
+---
 
-## Pull Requests
+## Scope
 
-1. Create a branch from `main`.
-2. Ensure all tests pass locally.
-3. Add or update relevant documentation.
-4. Keep diffs minimal and focused on one concern.
-5. Request review via PR. Do not merge without approval.
+Contributions should fit at least one of these:
 
-## Commit Style
+- New verification rules or safety checks based on real-world robotics constraints
+- Improvements to error messages or diagnostics
+- Onboarding improvements, documentation, or examples
+- Performance improvements that maintain determinism
+- Bug fixes with test coverage
 
-- Use clear prefixes:
-  - `feat:` new feature
-  - `fix:` bug fix
-  - `docs:` documentation changes
-  - `test:` tests only
-  - `refactor:` structural changes without behavior change
-- Keep messages brief and to the point.
+#### Not in current scope for the core
 
-## Communication
+These are not accepted in the core CLI today. They may be explored in separate modules or future layers **if they can be justified by real-world usage**.
 
-- Open an issue for discussions larger than a few lines of change.
-- Stay civil and technical. Critique code, not people.
-- Decisions prioritize stability, clarity, and maintainability.
+- LLM or AI-driven decision-making in core logic
+- Commercial marketplace, billing, or platform expansion
+- Hidden network calls, auto-scraping, or implicit remote dependencies
 
-## Licensing
+**Rationale**:
+The project is currently focused on deterministic, auditable checks.
+Exploration of these areas may happen later only if they do not undermine that goal.
 
-- All contributions are under MIT License.
-- CLA must be signed for PRs to be accepted.
-- You retain copyright to your contributions.
+---
+## Workflow
 
-## Rejection Criteria
+### Standard contribution path
+Default path for all contributors:
 
-Your PR will be rejected if:
+1. Create an issue describing the need and proposed change.
+2. Wait for Maintainer feedback and approval.
+3. Create a feature branch from `main`.
+4. Implement the change and add tests.
+5. Submit a pull request.
 
-- It increases complexity without clear benefit.
-- It introduces magic behavior or silent failures.
-- It duplicates existing functionality without justification.
-- It adds heavy external dependencies without approval.
-- It solves a problem that is not validated or discussed.
+This avoids misaligned work and wasted effort.
 
+### For frequent contributors
+If approved by the Maintainer, collaborator status may be granted.
+This allows direct branch creation and reduces friction.
+
+---
+
+## Expectations
+
+- Small, focused pull requests
+- Include tests where meaningful
+- Follow existing code patterns
+- No breaking changes without discussion
+- Deterministic behavior only
+
+Run locally before opening a PR:
+
+```bash
+make verify
+# or
+go test ./...
+go build ./...
+```
 ## Final Note
 
 This project is evolving. Expect rules to refine over time. Drive the project forward with clarity and discipline.
