@@ -98,7 +98,7 @@ func TestRuleDriverChannels(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := baseSpec()
 			tt.mutate(&spec)
-			codes := reportCodes(RunAll(spec))
+			codes := reportCodes(RunAll(spec, nil))
 			for _, c := range tt.want {
 				requireHasCode(t, codes, c)
 			}
@@ -143,7 +143,7 @@ func TestRuleMotorSupplyVoltage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := baseSpec()
 			tt.mutate(&spec)
-			codes := reportCodes(RunAll(spec))
+			codes := reportCodes(RunAll(spec, nil))
 			for _, c := range tt.want {
 				requireHasCode(t, codes, c)
 			}
@@ -205,7 +205,7 @@ func TestRuleDriverCurrentHeadroom(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := baseSpec()
 			tt.mutate(&spec)
-			codes := reportCodes(RunAll(spec))
+			codes := reportCodes(RunAll(spec, nil))
 			for _, c := range tt.want {
 				requireHasCode(t, codes, c)
 			}
@@ -258,7 +258,7 @@ func TestRuleLogicVoltageCompat(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := baseSpec()
 			tt.mutate(&spec)
-			codes := reportCodes(RunAll(spec))
+			codes := reportCodes(RunAll(spec, nil))
 			for _, c := range tt.want {
 				requireHasCode(t, codes, c)
 			}
@@ -296,7 +296,7 @@ func TestRuleRailCurrentBudget(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			spec := baseSpec()
 			tt.mutate(&spec)
-			codes := reportCodes(RunAll(spec))
+			codes := reportCodes(RunAll(spec, nil))
 			for _, c := range tt.want {
 				requireHasCode(t, codes, c)
 			}

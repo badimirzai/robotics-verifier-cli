@@ -1,12 +1,13 @@
 spec_version: 0.1
 
-battery:
-  voltage_nominal: 14.8
-  voltage_max: 16.8
-
-logic_rail:
-  voltage: 3.3
-  max_current: 2.0
+power:
+  battery:
+    chemistry: 'Li-ion'
+    voltage_v: 11.1
+    max_current_a: 20.0
+  logic_rail:
+    voltage_v: 3.3
+    max_current_a: 2.0
 
 mcu:
   part: mcus/esp32s3

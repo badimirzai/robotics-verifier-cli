@@ -3,4 +3,4 @@ type: mcu
 name: ESP32-S3
 
 mcu:
-  logic_voltage: 3.3
+  logic_voltage_v: 3.3

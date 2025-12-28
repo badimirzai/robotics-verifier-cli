@@ -75,6 +75,16 @@ make verify
 go test ./...
 go build ./...
 ```
+----
+## Commit style 
+- Use clear prefixes:
+  - `feat:` new feature
+  - `fix:` bug fix
+  - `docs:` documentation changes
+  - `test:` tests only
+  - `refactor:` structural changes without behavior change
+- Keep messages brief and to the point.
+----
 ## Final Note
 
 This project is evolving. Expect rules to refine over time. Drive the project forward with clarity and discipline.

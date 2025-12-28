@@ -36,13 +36,13 @@ func TestStore_LoadDriver_TB6612FNG(t *testing.T) {
 	if drv.MotorDriver.Channels != 2 {
 		t.Errorf("expected Channels=2, got %d", drv.MotorDriver.Channels)
 	}
-	if drv.MotorDriver.MotorVoltageMin <= 0 || drv.MotorDriver.MotorVoltageMax <= 0 {
+	if drv.MotorDriver.MotorSupplyMinV <= 0 || drv.MotorDriver.MotorSupplyMaxV <= 0 {
 		t.Errorf("expected motor voltage range to be set, got [%.2f, %.2f]",
-			drv.MotorDriver.MotorVoltageMin, drv.MotorDriver.MotorVoltageMax)
+			drv.MotorDriver.MotorSupplyMinV, drv.MotorDriver.MotorSupplyMaxV)
 	}
-	if drv.MotorDriver.CurrentContinuous <= 0 || drv.MotorDriver.CurrentPeak <= 0 {
+	if drv.MotorDriver.ContinuousPerChA <= 0 || drv.MotorDriver.PeakPerChA <= 0 {
 		t.Errorf("expected currents to be >0, got continuous=%.2f, peak=%.2f",
-			drv.MotorDriver.CurrentContinuous, drv.MotorDriver.CurrentPeak)
+			drv.MotorDriver.ContinuousPerChA, drv.MotorDriver.PeakPerChA)
 	}
 }
 
@@ -61,9 +61,9 @@ func TestStore_LoadMotor_Generic12V(t *testing.T) {
 		t.Errorf("expected Name to be set")
 	}
 
-	if m.Motor.NominalCurrent <= 0 || m.Motor.StallCurrent <= 0 {
+	if m.Motor.NominalCurrentA <= 0 || m.Motor.StallCurrentA <= 0 {
 		t.Errorf("expected non-zero currents, got nominal=%.2f, stall=%.2f",
-			m.Motor.NominalCurrent, m.Motor.StallCurrent)
+			m.Motor.NominalCurrentA, m.Motor.StallCurrentA)
 	}
 }
 
@@ -81,8 +81,8 @@ func TestStore_LoadMCU_ESP32S3(t *testing.T) {
 	if mcu.Name == "" {
 		t.Errorf("expected Name to be set")
 	}
-	if mcu.MCU.LogicVoltage <= 0 {
-		t.Errorf("expected non-zero logic voltage, got %.2f", mcu.MCU.LogicVoltage)
+	if mcu.MCU.LogicVoltageV <= 0 {
+		t.Errorf("expected non-zero logic voltage, got %.2f", mcu.MCU.LogicVoltageV)
 	}
 }
 

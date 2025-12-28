@@ -17,13 +17,13 @@ type DriverPartFile struct {
 	MPN    string `yaml:"mpn"`
 
 	MotorDriver struct {
-		Channels          int     `yaml:"channels"`
-		MotorVoltageMin   float64 `yaml:"motor_voltage_min"`
-		MotorVoltageMax   float64 `yaml:"motor_voltage_max"`
-		LogicVoltageMin   float64 `yaml:"logic_voltage_min"`
-		LogicVoltageMax   float64 `yaml:"logic_voltage_max"`
-		CurrentContinuous float64 `yaml:"current_continuous"`
-		CurrentPeak       float64 `yaml:"current_peak"`
+		Channels         int     `yaml:"channels"`
+		MotorSupplyMinV  float64 `yaml:"motor_supply_min_v"`
+		MotorSupplyMaxV  float64 `yaml:"motor_supply_max_v"`
+		LogicVoltageMinV float64 `yaml:"logic_voltage_min_v"`
+		LogicVoltageMaxV float64 `yaml:"logic_voltage_max_v"`
+		ContinuousPerChA float64 `yaml:"continuous_per_channel_a"`
+		PeakPerChA       float64 `yaml:"peak_per_channel_a"`
 	} `yaml:"motor_driver"`
 }
 
@@ -35,8 +35,8 @@ type MotorPartFile struct {
 	Name   string `yaml:"name"`
 
 	Motor struct {
-		NominalCurrent float64 `yaml:"nominal_current"`
-		StallCurrent   float64 `yaml:"stall_current"`
+		NominalCurrentA float64 `yaml:"nominal_current_a"`
+		StallCurrentA   float64 `yaml:"stall_current_a"`
 	} `yaml:"motor"`
 }
 
@@ -48,7 +48,7 @@ type MCUPartFile struct {
 	Name   string `yaml:"name"`
 
 	MCU struct {
-		LogicVoltage float64 `yaml:"logic_voltage"`
+		LogicVoltageV float64 `yaml:"logic_voltage_v"`
 	} `yaml:"mcu"`
 }
 

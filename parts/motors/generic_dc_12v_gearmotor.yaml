@@ -1,15 +1,13 @@
 part_id: motors/generic_dc_12v_gearmotor
 type: motor
-name: Generic DC gearmotor (12V-class)
+name: Generic DC gearmotor (small 12V-class)
 
 motor:
-  nominal_current: 1.5
-  stall_current: 5.0
-  
-sources:
-  - https://www.pololu.com/product/5204
+  nominal_current_a: 0.9
+  stall_current_a: 2.5
+
 notes:
-  - "Placeholder motor profile for examples. Replace with real motor datasheet when available."
+  - "Placeholder motor profile sized to be safe with TB6612FNG-class drivers."
 confidence:
   nominal_current: low
   stall_current: low
