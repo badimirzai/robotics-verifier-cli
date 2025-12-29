@@ -20,6 +20,12 @@ This tool enforces a hardware contract so preventable failures surface immediate
 
 ---
 
+## How it works (at a glance)
+
+![Architecture Overview](./assets/rvcli_architecture.png)
+
+---
+
 ## Quick start (90 seconds)
 
 ### Install
@@ -91,6 +97,14 @@ exit code: 2
 Interpretation:
 - The supply voltage cannot power the driver. This is a hard stop.
 - The driver continuous current is lower than motor nominal current margin. Proceeding is risky.
+
+---
+
+## Demo
+
+![alt text](./assets/demo.gif)
+
+[▶️ Watch full quality demo (MP4)](./assets/demo.mp4)
 
 ### Core commands
 
