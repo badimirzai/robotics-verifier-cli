@@ -29,12 +29,6 @@ Contributions should fit at least one of these:
 
 #### Not in current scope for the core
 
-These are not accepted in the core CLI today. They may be explored in separate modules or future layers **if they can be justified by real-world usage**.
-
-- LLM or AI-driven decision-making in core logic
-- Commercial marketplace, billing, or platform expansion
-- Hidden network calls, auto-scraping, or implicit remote dependencies
-
 **Rationale**:
 The project is currently focused on deterministic, auditable checks.
 Exploration of these areas may happen later only if they do not undermine that goal.

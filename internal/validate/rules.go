@@ -105,7 +105,7 @@ func ruleDriverChannels(spec model.RobotSpec, locs map[string]Location) []Findin
 	return []Finding{withLocation(locs, "motor_driver.channels", Finding{
 		Severity: SevInfo,
 		Code:     "DRV_CHANNELS_OK",
-		Message:  fmt.Sprintf("channels OK: %d motors <= %d motor_driver.channels", totalMotors, spec.Driver.Channels),
+		Message:  fmt.Sprintf("driver channels OK: %d motor(s) mapped to %d available channel(s)", totalMotors, spec.Driver.Channels),
 	})}
 }
 
@@ -122,8 +122,12 @@ func ruleMotorSupplyVoltage(spec model.RobotSpec, locs map[string]Location) []Fi
 		return []Finding{withLocation(locs, "power.battery.voltage_v", Finding{
 			Severity: SevError,
 			Code:     "DRV_SUPPLY_RANGE",
-			Message: fmt.Sprintf("battery %.2fV outside motor_driver motor supply range [%.2f, %.2f]V",
-				batV, spec.Driver.MotorSupplyMinV, spec.Driver.MotorSupplyMaxV),
+			Message: fmt.Sprintf(
+				"battery %.2fV outside motor_driver motor supply range [%.2f, %.2f]V",
+				batV,
+				spec.Driver.MotorSupplyMinV,
+				spec.Driver.MotorSupplyMaxV,
+			),
 		})}
 	}
 	return nil
@@ -141,13 +145,17 @@ func ruleDriverCurrentHeadroom(spec model.RobotSpec, locs map[string]Location) [
 			}))
 			continue
 		}
-		// Worst-case per channel: stall current. If you want to be conservative, require peak >= stall.
+		// Worst case per channel: stall current. If you want to be conservative, require peak >= stall.
 		if spec.Driver.PeakPerChA < m.StallCurrentA {
 			out = append(out, withLocation(locs, "motor_driver.peak_per_channel_a", Finding{
 				Severity: SevError,
 				Code:     "DRV_PEAK_LT_STALL",
-				Message: fmt.Sprintf("motor_driver.peak_per_channel_a %.2fA < motor %s stall %.2fA (per channel)",
-					spec.Driver.PeakPerChA, m.Name, m.StallCurrentA),
+				Message: fmt.Sprintf(
+					"motor_driver.peak_per_channel_a %.2fA < motor %s stall %.2fA (per channel)",
+					spec.Driver.PeakPerChA,
+					m.Name,
+					m.StallCurrentA,
+				),
 			}))
 		}
 		// Continuous should exceed nominal with margin
@@ -156,8 +164,13 @@ func ruleDriverCurrentHeadroom(spec model.RobotSpec, locs map[string]Location) [
 			out = append(out, withLocation(locs, "motor_driver.continuous_per_channel_a", Finding{
 				Severity: SevWarn,
 				Code:     "DRV_CONT_LOW_MARGIN",
-				Message: fmt.Sprintf("motor_driver.continuous_per_channel_a %.2fA may be low for motor %s nominal %.2fA (want >= %.2fA)",
-					spec.Driver.ContinuousPerChA, m.Name, m.NominalCurrentA, margin*m.NominalCurrentA),
+				Message: fmt.Sprintf(
+					"driver continuous rating %.2fA is below recommended %.2fA for motor %s (nominal %.2fA). Risk of overheating or current limiting under sustained load.",
+					spec.Driver.ContinuousPerChA,
+					margin*m.NominalCurrentA,
+					m.Name,
+					m.NominalCurrentA,
+				),
 			}))
 		}
 	}
@@ -177,16 +190,23 @@ func ruleLogicVoltageCompat(spec model.RobotSpec, locs map[string]Location) []Fi
 		return []Finding{withLocation(locs, "power.logic_rail.voltage_v", Finding{
 			Severity: SevError,
 			Code:     "LOGIC_V_DRIVER_MISMATCH",
-			Message: fmt.Sprintf("logic rail %.2fV outside motor_driver logic range [%.2f, %.2f]V",
-				lv, spec.Driver.LogicVoltageMinV, spec.Driver.LogicVoltageMaxV),
+			Message: fmt.Sprintf(
+				"logic rail %.2fV outside motor_driver logic range [%.2f, %.2f]V",
+				lv,
+				spec.Driver.LogicVoltageMinV,
+				spec.Driver.LogicVoltageMaxV,
+			),
 		})}
 	}
 	if math.Abs(spec.MCU.LogicVoltageV-lv) > 0.25 {
 		return []Finding{withLocation(locs, "mcu.logic_voltage_v", Finding{
 			Severity: SevWarn,
 			Code:     "LOGIC_V_MCU_MISMATCH",
-			Message: fmt.Sprintf("MCU logic %.2fV differs from rail %.2fV, check level shifting",
-				spec.MCU.LogicVoltageV, lv),
+			Message: fmt.Sprintf(
+				"MCU logic %.2fV differs from rail %.2fV, check level shifting",
+				spec.MCU.LogicVoltageV,
+				lv,
+			),
 		})}
 	}
 	return nil
@@ -205,6 +225,6 @@ func ruleRailCurrentBudget(spec model.RobotSpec, locs map[string]Location) []Fin
 	return []Finding{withLocation(locs, "power.logic_rail.max_current_a", Finding{
 		Severity: SevInfo,
 		Code:     "RAIL_BUDGET_NOTE",
-		Message:  fmt.Sprintf("logic rail budget set to %.2fA (v1 does not estimate MCU+driver logic draw yet)", railMax),
+		Message:  fmt.Sprintf("logic rail budget set to %.2fA. v1 does not estimate MCU and driver logic current yet.", railMax),
 	})}
 }
