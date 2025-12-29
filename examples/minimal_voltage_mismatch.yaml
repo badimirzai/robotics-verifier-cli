@@ -1,0 +1,32 @@
+name: "minimal-voltage-mismatch"
+
+power:
+  battery:
+    voltage_v: 12
+    max_current_a: 10
+  logic_rail:
+    voltage_v: 3.3
+    max_current_a: 1
+
+mcu:
+  name: "Generic MCU"
+  logic_voltage_v: 3.3
+  max_gpio_current_ma: 12
+
+motor_driver:
+  name: "TB6612FNG-like"
+  motor_supply_min_v: 18
+  motor_supply_max_v: 24
+  continuous_per_channel_a: 0.6
+  peak_per_channel_a: 6
+  channels: 1
+  logic_voltage_min_v: 3.0
+  logic_voltage_max_v: 5.5
+
+motors:
+  - name: "DC motor"
+    count: 1
+    voltage_min_v: 6
+    voltage_max_v: 12
+    stall_current_a: 5
+    nominal_current_a: 1

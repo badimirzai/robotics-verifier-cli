@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
+	"strings"
 
 	"github.com/badimirzai/robotics-verifier-cli/internal/model"
 	"github.com/badimirzai/robotics-verifier-cli/internal/output"
@@ -18,40 +20,101 @@ var checkCmd = &cobra.Command{
 	Aliases: []string{"validate"},
 	Args:    cobra.MaximumNArgs(1),
 	Short:   "Validate a robot spec against deterministic electrical rules",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Long: `Validate a robot spec against deterministic electrical rules.
+
+Output control flags:
+  --output json             print machine readable JSON to stdout
+  --pretty                  pretty print JSON to stdout (requires --output json)
+  --out-file <path>         write compact JSON to file (requires --output json)
+  --debug                   enable debug mode (or use RV_DEBUG=1)
+
+Examples:
+  rv check robot.yaml --output json
+  rv check robot.yaml --output json --pretty
+  rv check robot.yaml --output json --out-file report.json
+  rv check robot.yaml --output json --pretty --out-file report.json`,
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		outputFormat := strings.ToLower(strings.TrimSpace(getOutputFormat(cmd)))
+		prettyOutput, _ := cmd.Flags().GetBool("pretty")
+		outFile, _ := cmd.Flags().GetString("out-file")
+		var specFile string
+
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				msg := fmt.Sprintf("panic: %v", recovered)
+				stack := string(debug.Stack())
+				if outputFormat == "json" {
+					var dbg *output.Debug
+					if debugEnabled {
+						dbg = &output.Debug{InternalError: msg, Stacktrace: stack}
+					}
+					_ = renderJSONErrorOutputs(specFile, 3, "internal error: unexpected panic", prettyOutput, outFile, dbg)
+				} else {
+					if debugEnabled {
+						fmt.Fprintln(os.Stderr, msg)
+						fmt.Fprintln(os.Stderr, stack)
+					} else {
+						fmt.Fprintln(os.Stderr, "internal error: unexpected panic (run with --debug or RV_DEBUG=1)")
+					}
+					printExitCode(3)
+				}
+				err = silentExit(3)
+			}
+		}()
+
 		path, _ := cmd.Flags().GetString("file")
 		if path == "" && len(args) > 0 {
 			path = args[0]
 		}
+		specFile = path
 		if path == "" {
-			return fmt.Errorf("missing spec file (arg or -f/--file)")
+			return handleCheckError(outputFormat, 3, "", fmt.Errorf("missing spec file (arg or -f/--file)"), nil, prettyOutput, outFile)
+		}
+		if outFile != "" && outputFormat != "json" {
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("--out-file requires --output json"), nil, prettyOutput, outFile)
+		}
+		if prettyOutput && outputFormat != "json" {
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("--pretty requires --output json"), nil, prettyOutput, outFile)
 		}
 
 		b, err := os.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("read spec: %w", err)
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("read spec: %w", err), nil, prettyOutput, outFile)
 		}
 
 		var raw model.RobotSpec
 		var doc yaml.Node
 		if err := yaml.Unmarshal(b, &doc); err != nil {
-			return fmt.Errorf("parse yaml: %w", err)
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("parse yaml: %w", err), nil, prettyOutput, outFile)
 		}
 		if err := doc.Decode(&raw); err != nil {
-			return fmt.Errorf("decode yaml: %w", err)
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("decode yaml: %w", err), nil, prettyOutput, outFile)
 		}
 
 		store := parts.NewStore("parts")
 		resolved, err := resolve.ResolveAll(raw, store)
 		if err != nil {
-			return fmt.Errorf("resolve spec with parts: %w", err)
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("resolve spec with parts: %w", err), nil, prettyOutput, outFile)
 		}
 
 		locs := buildLocationMap(path, &doc)
 		rep := validate.RunAll(resolved, locs)
-		fmt.Println(output.RenderReport(rep))
+		exitCode := 0
 		if rep.HasErrors() {
-			os.Exit(2) // deterministic non-zero for CI
+			exitCode = 2
+		}
+
+		if outputFormat == "json" {
+			if err := renderJSONOutputs(path, rep, exitCode, prettyOutput, outFile, nil); err != nil {
+				return err
+			}
+		} else {
+			fmt.Println(output.RenderReport(rep))
+			printExitCode(exitCode)
+		}
+
+		if exitCode != 0 {
+			return silentExit(exitCode)
 		}
 		return nil
 	},
@@ -59,7 +122,107 @@ var checkCmd = &cobra.Command{
 
 func init() {
 	checkCmd.Flags().StringP("file", "f", "", "Path to YAML spec")
+	checkCmd.Flags().StringP("output", "o", "text", "Output format: text or json")
+	checkCmd.Flags().Bool("pretty", false, "Pretty print JSON to stdout (requires --output json)")
+	checkCmd.Flags().String("out-file", "", "Write compact JSON to file (requires --output json)")
 	rootCmd.AddCommand(checkCmd)
+}
+
+func getOutputFormat(cmd *cobra.Command) string {
+	outputFormat, _ := cmd.Flags().GetString("output")
+	if outputFormat == "" {
+		return "text"
+	}
+	return outputFormat
+}
+
+func printExitCode(code int) {
+	fmt.Printf("exit code: %d\n", code)
+}
+
+func handleCheckError(outputFormat string, exitCode int, specFile string, err error, debugInfo *output.Debug, pretty bool, outFile string) error {
+	if outputFormat == "json" {
+		if err := renderJSONErrorOutputs(specFile, exitCode, err.Error(), pretty, outFile, debugInfo); err != nil {
+			return err
+		}
+		return silentExit(exitCode)
+	}
+	if debugEnabled && debugInfo != nil && debugInfo.InternalError != "" {
+		fmt.Fprintln(os.Stderr, debugInfo.InternalError)
+		if debugInfo.Stacktrace != "" {
+			fmt.Fprintln(os.Stderr, debugInfo.Stacktrace)
+		}
+	} else {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	return silentExit(exitCode)
+}
+
+func renderJSONOutputs(path string, report validate.Report, exitCode int, pretty bool, outFile string, debugInfo *output.Debug) error {
+	payload, summary, err := output.RenderJSONReport(path, report, exitCode, debugInfo)
+	if err != nil {
+		return internalError(err)
+	}
+	_ = summary
+
+	if outFile != "" {
+		compact, err := output.FormatJSON(payload, false)
+		if err != nil {
+			return internalError(err)
+		}
+		if writeErr := os.WriteFile(outFile, compact, 0o644); writeErr != nil {
+			fmt.Fprintln(os.Stderr, "write json:", writeErr)
+			return silentExit(3)
+		}
+	}
+
+	if outFile != "" && !pretty {
+		fmt.Printf("Written to %s\n", outFile)
+		return nil
+	}
+
+	prettyBytes, err := output.FormatJSON(payload, pretty)
+	if err != nil {
+		return internalError(err)
+	}
+	fmt.Println(string(prettyBytes))
+	return nil
+}
+
+func renderJSONErrorOutputs(specFile string, exitCode int, message string, pretty bool, outFile string, debugInfo *output.Debug) error {
+	path := specFile
+	if path == "" {
+		path = "spec.yaml"
+	}
+	payload, summary, err := output.RenderJSONError(path, exitCode, message, debugInfo)
+	if err != nil {
+		fmt.Printf(`{"spec_file":"%s","summary":{"errors":1,"warnings":0,"infos":0,"exit_code":%d},"findings":[{"id":"PARSER_ERROR","severity":"ERROR","message":"failed to render json error","path":null,"location":null,"meta":{}}]}`+"\n", path, exitCode)
+		return nil
+	}
+	_ = summary
+
+	if outFile != "" {
+		compact, err := output.FormatJSON(payload, false)
+		if err != nil {
+			return internalError(err)
+		}
+		if writeErr := os.WriteFile(outFile, compact, 0o644); writeErr != nil {
+			fmt.Fprintln(os.Stderr, "write json:", writeErr)
+			return silentExit(3)
+		}
+	}
+
+	if outFile != "" && !pretty {
+		fmt.Printf("Written to %s\n", outFile)
+		return nil
+	}
+
+	b, err := output.FormatJSON(payload, pretty)
+	if err != nil {
+		return internalError(err)
+	}
+	fmt.Println(string(b))
+	return nil
 }
 
 func buildLocationMap(path string, doc *yaml.Node) map[string]validate.Location {
@@ -83,18 +246,18 @@ func buildLocationMap(path string, doc *yaml.Node) map[string]validate.Location 
 				if prefix != "" {
 					next = prefix + "." + key.Value
 				}
-				locs[next] = validate.Location{File: path, Line: key.Line}
+				locs[next] = validate.Location{File: path, Line: key.Line, Column: key.Column}
 				if val.Kind == yaml.ScalarNode {
-					locs[next] = validate.Location{File: path, Line: val.Line}
+					locs[next] = validate.Location{File: path, Line: val.Line, Column: val.Column}
 				}
 				walk(val, next)
 			}
 		case yaml.SequenceNode:
 			for i, item := range n.Content {
 				next := fmt.Sprintf("%s[%d]", prefix, i)
-				locs[next] = validate.Location{File: path, Line: item.Line}
+				locs[next] = validate.Location{File: path, Line: item.Line, Column: item.Column}
 				if item.Kind == yaml.ScalarNode {
-					locs[next] = validate.Location{File: path, Line: item.Line}
+					locs[next] = validate.Location{File: path, Line: item.Line, Column: item.Column}
 				}
 				walk(item, next)
 			}

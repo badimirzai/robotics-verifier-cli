@@ -306,3 +306,61 @@ func TestRuleRailCurrentBudget(t *testing.T) {
 		})
 	}
 }
+
+func TestReadmeMinimalVoltageMismatch(t *testing.T) {
+	spec := model.RobotSpec{
+		Power: model.PowerSpec{
+			Battery: model.Battery{
+				VoltageV:    12,
+				MaxCurrentA: 10,
+			},
+			Rail: model.Rail{
+				VoltageV:    3.3,
+				MaxCurrentA: 1,
+			},
+		},
+		MCU: model.MCU{
+			Name:             "Generic MCU",
+			LogicVoltageV:    3.3,
+			MaxGPIOCurrentmA: 12,
+		},
+		Driver: model.MotorDriver{
+			Name:             "TB6612FNG-like",
+			MotorSupplyMinV:  18,
+			MotorSupplyMaxV:  24,
+			ContinuousPerChA: 0.6,
+			PeakPerChA:       6,
+			Channels:         1,
+			LogicVoltageMinV: 3.0,
+			LogicVoltageMaxV: 5.5,
+		},
+		Motors: []model.Motor{
+			{
+				Name:            "DC motor",
+				Count:           1,
+				VoltageMinV:     6,
+				VoltageMaxV:     12,
+				StallCurrentA:   5,
+				NominalCurrentA: 1,
+			},
+		},
+	}
+
+	report := RunAll(spec, nil)
+	codes := reportCodes(report)
+	requireHasCode(t, codes, "DRV_SUPPLY_RANGE")
+	requireHasCode(t, codes, "DRV_CONT_LOW_MARGIN")
+}
+
+func TestExitCodeSemantics(t *testing.T) {
+	clean := baseSpec()
+	if RunAll(clean, nil).HasErrors() {
+		t.Fatal("expected clean spec to return exit code 0")
+	}
+
+	broken := baseSpec()
+	broken.Power.Battery.VoltageV = 0
+	if !RunAll(broken, nil).HasErrors() {
+		t.Fatal("expected broken spec to return exit code 2")
+	}
+}
