@@ -122,6 +122,7 @@ rv check --help            Show check command options
 - Current sufficiency for stall and nominal loads
 - Driver to motor channel allocation
 - Basic logic level consistency
+-	Logic rail compatibility between MCU and motor driver
 
 Findings:
 - INFO for context
