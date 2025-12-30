@@ -50,6 +50,7 @@ func RunAll(spec model.RobotSpec, locs map[string]Location) Report {
 	r.Findings = append(r.Findings, ruleDriverCurrentHeadroom(spec, locs)...)
 	r.Findings = append(r.Findings, ruleLogicVoltageCompat(spec, locs)...)
 	r.Findings = append(r.Findings, ruleRailCurrentBudget(spec, locs)...)
+	r.Findings = append(r.Findings, ruleLogicLevelMisMatch(spec, locs)...)
 	return r
 }
 
@@ -227,4 +228,61 @@ func ruleRailCurrentBudget(spec model.RobotSpec, locs map[string]Location) []Fin
 		Code:     "RAIL_BUDGET_NOTE",
 		Message:  fmt.Sprintf("logic rail budget set to %.2fA. v1 does not estimate MCU and driver logic current yet.", railMax),
 	})}
+}
+
+func ruleLogicLevelMisMatch(spec model.RobotSpec, locs map[string]Location) []Finding {
+	mcuLogicV := spec.MCU.LogicVoltageV
+	driverMinV := spec.Driver.LogicVoltageMinV
+	driverMaxV := spec.Driver.LogicVoltageMaxV
+
+	var out []Finding
+	// Validate voltages before comparing logic levels.
+	if mcuLogicV < 0 {
+		out = append(out, withLocation(locs, "mcu.logic_voltage_v", Finding{
+			Severity: SevError,
+			Code:     "MCU_LOGIC_V_INVALID",
+			Message:  "mcu.logic_voltage_v must be > 0",
+		}))
+	}
+	if driverMinV < 0 {
+		out = append(out, withLocation(locs, "motor_driver.logic_voltage_min_v", Finding{
+			Severity: SevError,
+			Code:     "DRV_LOGIC_MIN_V_INVALID",
+			Message:  "motor_driver.logic_voltage_min_v must be > 0",
+		}))
+	}
+	if driverMaxV < 0 {
+		out = append(out, withLocation(locs, "motor_driver.logic_voltage_max_v", Finding{
+			Severity: SevError,
+			Code:     "DRV_LOGIC_MAX_V_INVALID",
+			Message:  "motor_driver.logic_voltage_max_v must be > 0",
+		}))
+	}
+	if driverMinV > 0 && driverMaxV > 0 && driverMinV > driverMaxV {
+		out = append(out, withLocation(locs, "motor_driver.logic_voltage_min_v", Finding{
+			Severity: SevError,
+			Code:     "DRV_LOGIC_RANGE_INVALID",
+			Message:  "motor_driver.logic_voltage_min_v must be <= motor_driver.logic_voltage_max_v",
+		}))
+	}
+	if len(out) > 0 {
+		return out
+	}
+	if mcuLogicV == 0 || driverMinV == 0 || driverMaxV == 0 {
+		return nil
+	}
+
+	if mcuLogicV < driverMinV || mcuLogicV > driverMaxV {
+		return []Finding{withLocation(locs, "mcu.logic_voltage_v", Finding{
+			Severity: SevError,
+			Code:     "LOGIC_LEVEL_MISMATCH",
+			Message: fmt.Sprintf(
+				"MCU logic %.2fV outside driver logic window [%.2f, %.2f]V",
+				mcuLogicV,
+				driverMinV,
+				driverMaxV,
+			),
+		})}
+	}
+	return nil
 }

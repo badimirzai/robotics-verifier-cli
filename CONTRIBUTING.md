@@ -13,8 +13,6 @@ By contributing, you confirm that you:
 - Agree to the terms in CLA.md (relicensing and commercial use allowed)
 - Have the right to submit the code
 
-If you do not agree, do not contribute.
-
 ---
 
 ## Scope

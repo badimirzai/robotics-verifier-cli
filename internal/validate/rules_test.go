@@ -269,6 +269,99 @@ func TestRuleLogicVoltageCompat(t *testing.T) {
 	}
 }
 
+func TestRuleLogicLevelMismatch(t *testing.T) {
+	// Covers invalid inputs and the mismatch boundary so failures are easy to spot.
+	tests := []struct {
+		name   string
+		mutate func(*model.RobotSpec)
+		want   []string
+		not    []string
+	}{
+		{
+			name: "mcu_voltage_invalid",
+			mutate: func(s *model.RobotSpec) {
+				s.MCU.LogicVoltageV = -1
+			},
+			want: []string{"MCU_LOGIC_V_INVALID"},
+			not:  []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "mcu_voltage_missing",
+			mutate: func(s *model.RobotSpec) {
+				s.MCU.LogicVoltageV = 0
+			},
+			not: []string{"MCU_LOGIC_V_INVALID", "LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "driver_min_invalid",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.LogicVoltageMinV = 0
+			},
+			not: []string{"DRV_LOGIC_MIN_V_INVALID", "LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "driver_min_negative",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.LogicVoltageMinV = -1
+			},
+			want: []string{"DRV_LOGIC_MIN_V_INVALID"},
+			not:  []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "driver_max_invalid",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.LogicVoltageMaxV = 0
+			},
+			not: []string{"DRV_LOGIC_MAX_V_INVALID", "LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "driver_max_negative",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.LogicVoltageMaxV = -1
+			},
+			want: []string{"DRV_LOGIC_MAX_V_INVALID"},
+			not:  []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "driver_min_greater_than_max",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.LogicVoltageMinV = 6.0
+				s.Driver.LogicVoltageMaxV = 5.0
+			},
+			want: []string{"DRV_LOGIC_RANGE_INVALID"},
+			not:  []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name: "mcu_outside_driver_window",
+			mutate: func(s *model.RobotSpec) {
+				s.MCU.LogicVoltageV = 3.3
+				s.Driver.LogicVoltageMinV = 5.0
+				s.Driver.LogicVoltageMaxV = 6.0
+			},
+			want: []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+		{
+			name:   "mcu_inside_driver_window",
+			mutate: func(s *model.RobotSpec) {},
+			not:    []string{"LOGIC_LEVEL_MISMATCH"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := baseSpec()
+			tt.mutate(&spec)
+			codes := reportCodes(RunAll(spec, nil))
+			for _, c := range tt.want {
+				requireHasCode(t, codes, c)
+			}
+			for _, c := range tt.not {
+				requireNoCode(t, codes, c)
+			}
+		})
+	}
+}
+
 func TestRuleRailCurrentBudget(t *testing.T) {
 	tests := []struct {
 		name   string
