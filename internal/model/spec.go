@@ -14,9 +14,12 @@ type PowerSpec struct {
 }
 
 type Battery struct {
-	Chemistry   string  `yaml:"chemistry"` // e.g. "Li-ion"
-	VoltageV    float64 `yaml:"voltage_v"` // nominal
-	MaxCurrentA float64 `yaml:"max_current_a"`
+	Chemistry     string  `yaml:"chemistry"` // e.g. "Li-ion"
+	VoltageV      float64 `yaml:"voltage_v"` // nominal
+	MaxCurrentA   float64 `yaml:"max_current_a"`
+	CapacityAh    float64 `yaml:"capacity_ah"`
+	CRating       float64 `yaml:"c_rating"`
+	MaxDischargeA float64 `yaml:"max_discharge_a"`
 }
 
 type Rail struct {

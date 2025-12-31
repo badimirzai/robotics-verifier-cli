@@ -3,6 +3,7 @@ package validate
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"strings"
 
 	"github.com/badimirzai/robotics-verifier-cli/internal/model"
@@ -51,6 +52,7 @@ func RunAll(spec model.RobotSpec, locs map[string]Location) Report {
 	r.Findings = append(r.Findings, ruleLogicVoltageCompat(spec, locs)...)
 	r.Findings = append(r.Findings, ruleRailCurrentBudget(spec, locs)...)
 	r.Findings = append(r.Findings, ruleLogicLevelMisMatch(spec, locs)...)
+	r.Findings = append(r.Findings, ruleBatteryCRate(spec, locs)...)
 	return r
 }
 
@@ -112,7 +114,7 @@ func ruleDriverChannels(spec model.RobotSpec, locs map[string]Location) []Findin
 
 func ruleMotorSupplyVoltage(spec model.RobotSpec, locs map[string]Location) []Finding {
 	batV := spec.Power.Battery.VoltageV
-	if batV <= 0 {
+	if batV < 0 {
 		return []Finding{withLocation(locs, "power.battery.voltage_v", Finding{
 			Severity: SevError,
 			Code:     "BAT_V_INVALID",
@@ -285,4 +287,90 @@ func ruleLogicLevelMisMatch(spec model.RobotSpec, locs map[string]Location) []Fi
 		})}
 	}
 	return nil
+}
+
+func ruleBatteryCRate(spec model.RobotSpec, locs map[string]Location) []Finding {
+	cRate := spec.Power.Battery.CRating
+	maxDischargeA := spec.Power.Battery.MaxDischargeA
+	capacityAh := spec.Power.Battery.CapacityAh
+	maxCurrentA := spec.Power.Battery.MaxCurrentA
+
+	batteryMaxA := 0.0
+	sourcePath := ""
+	sourceDetail := ""
+	switch {
+	case maxDischargeA > 0:
+		batteryMaxA = maxDischargeA
+		sourcePath = yamlPathForRobotSpec("Power", "Battery", "MaxDischargeA")
+		sourceDetail = "MaxDischargeA override"
+	case capacityAh > 0 && cRate > 0:
+		batteryMaxA = capacityAh * cRate
+		sourcePath = yamlPathForRobotSpec("Power", "Battery", "CRating")
+		sourceDetail = fmt.Sprintf("%.2fAh * %.2fC", capacityAh, cRate)
+	case maxCurrentA > 0:
+		batteryMaxA = maxCurrentA
+		sourcePath = yamlPathForRobotSpec("Power", "Battery", "MaxCurrentA")
+		sourceDetail = "max_current_a"
+	default:
+		return nil
+	}
+
+	peakCurrentA := 0.0
+	for _, motor := range spec.Motors {
+		if motor.StallCurrentA <= 0 || motor.Count <= 0 {
+			continue
+		}
+		peakCurrentA += motor.StallCurrentA * float64(motor.Count)
+	}
+	if batteryMaxA <= 0 || peakCurrentA <= 0 {
+		return nil
+	}
+
+	if peakCurrentA > batteryMaxA {
+		return []Finding{withLocation(locs, sourcePath, Finding{
+			Severity: SevError,
+			Code:     "BATT_PEAK_OVER_C",
+			Message:  fmt.Sprintf("Peak current %.2fA exceeds battery max %.2fA (%s)", peakCurrentA, batteryMaxA, sourceDetail),
+		})}
+	}
+	if peakCurrentA >= batteryMaxA*0.8 {
+		return []Finding{withLocation(locs, sourcePath, Finding{
+			Severity: SevWarn,
+			Code:     "BATT_PEAK_MARGIN_LOW",
+			Message:  fmt.Sprintf("Peak current %.2fA is close to battery max %.2fA (%s)", peakCurrentA, batteryMaxA, sourceDetail),
+		})}
+	}
+	return nil
+}
+
+func yamlPathForRobotSpec(fields ...string) string {
+	t := reflect.TypeOf(model.RobotSpec{})
+	parts := make([]string, 0, len(fields))
+	for _, name := range fields {
+		field, ok := t.FieldByName(name)
+		if !ok {
+			return ""
+		}
+		tag := field.Tag.Get("yaml")
+		if tag == "" || tag == "-" {
+			return ""
+		}
+		tag = strings.Split(tag, ",")[0]
+		if tag == "" {
+			return ""
+		}
+		parts = append(parts, tag)
+
+		t = field.Type
+		if t.Kind() == reflect.Pointer {
+			t = t.Elem()
+		}
+		if t.Kind() == reflect.Slice {
+			t = t.Elem()
+		}
+		if t.Kind() != reflect.Struct {
+			break
+		}
+	}
+	return strings.Join(parts, ".")
 }
