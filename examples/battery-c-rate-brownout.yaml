@@ -11,7 +11,7 @@ power:
 
 mcu:
   name: "Generic MCU"
-  logic_voltage_v: 3.3
+  logic_voltage_v: 5
   max_gpio_current_ma: 12
 
 motor_driver:
