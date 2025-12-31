@@ -30,7 +30,7 @@ This tool enforces a hardware contract so preventable failures surface immediate
 
 ### Install
 
-Requires Go **1.25.5** or newer.
+Requires Go **1.25.5** or newer (https://go.dev/dl/).
 
 ```bash
 go install github.com/badimirzai/robotics-verifier-cli/cmd/rv@latest
@@ -122,7 +122,8 @@ rv check --help            Show check command options
 - Current sufficiency for stall and nominal loads
 - Driver to motor channel allocation
 - Basic logic level consistency
--	Logic rail compatibility between MCU and motor driver
+- Logic rail compatibility between MCU and motor driver
+- Battery C rate vs total peak stall current (motors)
 
 Findings:
 - INFO for context
@@ -188,10 +189,19 @@ This is a linter. Not a simulator or optimizer.
 The core fields used in validation are:
 
 - power.battery.voltage_v
+- power.battery.capacity_ah
+- power.battery.c_rating
+- power.battery.max_discharge_a
+- power.battery.max_current_a
 - motor_driver.motor_supply_min_v
 - motor_driver.motor_supply_max_v
 - motors[].stall_current_a
 - motor_driver.peak_per_channel_a
+
+Battery max discharge uses the following precedence:
+1) power.battery.max_discharge_a
+2) power.battery.capacity_ah * power.battery.c_rating
+3) power.battery.max_current_a
 
 Unset or missing fields are treated as unknown. Some required values will surface as errors during resolution.
 

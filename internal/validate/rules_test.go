@@ -119,7 +119,7 @@ func TestRuleMotorSupplyVoltage(t *testing.T) {
 		{
 			name: "battery_invalid",
 			mutate: func(s *model.RobotSpec) {
-				s.Power.Battery.VoltageV = 0
+				s.Power.Battery.VoltageV = -1
 			},
 			want: []string{"BAT_V_INVALID"},
 			not:  []string{"DRV_SUPPLY_RANGE"},
@@ -382,6 +382,83 @@ func TestRuleRailCurrentBudget(t *testing.T) {
 			mutate: func(s *model.RobotSpec) {},
 			want:   []string{"RAIL_BUDGET_NOTE"},
 			not:    []string{"RAIL_I_UNKNOWN"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := baseSpec()
+			tt.mutate(&spec)
+			codes := reportCodes(RunAll(spec, nil))
+			for _, c := range tt.want {
+				requireHasCode(t, codes, c)
+			}
+			for _, c := range tt.not {
+				requireNoCode(t, codes, c)
+			}
+		})
+	}
+}
+
+func TestRuleBatteryCRate(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*model.RobotSpec)
+		want   []string
+		not    []string
+	}{
+		{
+			name: "peak_exceeds_battery_c_rate",
+			mutate: func(s *model.RobotSpec) {
+				s.Power.Battery.CapacityAh = 2.0
+				s.Power.Battery.CRating = 4.0
+				s.Power.Battery.MaxCurrentA = 0
+				s.Power.Battery.MaxDischargeA = 0
+			},
+			want: []string{"BATT_PEAK_OVER_C"},
+			not:  []string{"BATT_PEAK_MARGIN_LOW"},
+		},
+		{
+			name: "peak_near_battery_c_rate",
+			mutate: func(s *model.RobotSpec) {
+				s.Power.Battery.CapacityAh = 2.0
+				s.Power.Battery.CRating = 6.0
+				s.Power.Battery.MaxCurrentA = 0
+				s.Power.Battery.MaxDischargeA = 0
+			},
+			want: []string{"BATT_PEAK_MARGIN_LOW"},
+			not:  []string{"BATT_PEAK_OVER_C"},
+		},
+		{
+			name: "battery_max_discharge_override",
+			mutate: func(s *model.RobotSpec) {
+				s.Power.Battery.MaxDischargeA = 8.0
+				s.Power.Battery.CapacityAh = 0
+				s.Power.Battery.CRating = 0
+				s.Power.Battery.MaxCurrentA = 0
+			},
+			want: []string{"BATT_PEAK_OVER_C"},
+			not:  []string{"BATT_PEAK_MARGIN_LOW"},
+		},
+		{
+			name: "battery_max_current_only_ok",
+			mutate: func(s *model.RobotSpec) {
+				s.Power.Battery.MaxCurrentA = 20
+				s.Power.Battery.CapacityAh = 0
+				s.Power.Battery.CRating = 0
+				s.Power.Battery.MaxDischargeA = 0
+			},
+			not: []string{"BATT_PEAK_MARGIN_LOW", "BATT_PEAK_OVER_C"},
+		},
+		{
+			name: "battery_properties_unknown",
+			mutate: func(s *model.RobotSpec) {
+				s.Power.Battery.MaxCurrentA = 0
+				s.Power.Battery.CapacityAh = 0
+				s.Power.Battery.CRating = 0
+				s.Power.Battery.MaxDischargeA = 0
+			},
+			not: []string{"BATT_PEAK_OVER_C", "BATT_PEAK_MARGIN_LOW"},
 		},
 	}
 
