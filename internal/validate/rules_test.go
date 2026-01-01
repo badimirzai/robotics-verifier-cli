@@ -226,7 +226,7 @@ func TestRuleLogicVoltageCompat(t *testing.T) {
 		{
 			name: "rail_invalid",
 			mutate: func(s *model.RobotSpec) {
-				s.Power.Rail.VoltageV = 0
+				s.Power.Rail.VoltageV = -1
 			},
 			want: []string{"RAIL_V_INVALID"},
 			not:  []string{"LOGIC_V_DRIVER_MISMATCH", "LOGIC_V_MCU_MISMATCH"},

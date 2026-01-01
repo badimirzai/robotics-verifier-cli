@@ -53,6 +53,7 @@ func RunAll(spec model.RobotSpec, locs map[string]Location) Report {
 	r.Findings = append(r.Findings, ruleRailCurrentBudget(spec, locs)...)
 	r.Findings = append(r.Findings, ruleLogicLevelMisMatch(spec, locs)...)
 	r.Findings = append(r.Findings, ruleBatteryCRate(spec, locs)...)
+	r.Findings = append(r.Findings, ruleDriverStallOverload(spec, locs)...)
 	return r
 }
 
@@ -182,12 +183,14 @@ func ruleDriverCurrentHeadroom(spec model.RobotSpec, locs map[string]Location) [
 
 func ruleLogicVoltageCompat(spec model.RobotSpec, locs map[string]Location) []Finding {
 	lv := spec.Power.Rail.VoltageV
-	if lv <= 0 {
+	if lv < 0 {
 		return []Finding{withLocation(locs, "power.logic_rail.voltage_v", Finding{
 			Severity: SevError,
 			Code:     "RAIL_V_INVALID",
 			Message:  "power.logic_rail.voltage_v must be > 0",
 		})}
+	} else if lv == 0 {
+		return nil
 	}
 	if lv < spec.Driver.LogicVoltageMinV || lv > spec.Driver.LogicVoltageMaxV {
 		return []Finding{withLocation(locs, "power.logic_rail.voltage_v", Finding{
@@ -373,4 +376,41 @@ func yamlPathForRobotSpec(fields ...string) string {
 		}
 	}
 	return strings.Join(parts, ".")
+}
+
+func ruleDriverStallOverload(spec model.RobotSpec, locs map[string]Location) []Finding {
+	driverPeakPerChannelA := spec.Driver.PeakPerChA
+	driverChannels := spec.Driver.Channels
+	drivelPeakTotalA := driverPeakPerChannelA * float64(driverChannels)
+	stallTotalA := 0.0
+
+	// ignore undefined (zero) driver peak or channels
+	if drivelPeakTotalA == 0 {
+		return nil
+	}
+
+	for _, motor := range spec.Motors {
+		//TODO: handel negative values with WARNING/ERROS?
+		if motor.StallCurrentA == 0 || motor.Count == 0 {
+			continue
+		}
+		stallTotalA += motor.StallCurrentA * float64(motor.Count)
+	}
+
+	if stallTotalA > drivelPeakTotalA {
+		return []Finding{withLocation(locs, "mormor.farfar", Finding{
+			Severity: SevError,
+			Code:     "DRV_PEAK_OVERLOAD",
+			Message:  fmt.Sprintf("Total motor stall %.2fA exceeds driver peak %.2fA (%.2f per channel x %d )", stallTotalA, drivelPeakTotalA, driverPeakPerChannelA, driverChannels),
+		})}
+	} else if stallTotalA > 0.8*drivelPeakTotalA {
+		return []Finding{withLocation(locs, "mormor.farfar", Finding{
+			Severity: SevWarn,
+			Code:     "DRV_PEAK_MARGIN_LOW",
+			Message:  fmt.Sprintf("Total motor stall %.2fA is close to driver peak %.2fA (below 20 percent margin)", stallTotalA, drivelPeakTotalA),
+		})}
+	}
+
+	return nil
+
 }

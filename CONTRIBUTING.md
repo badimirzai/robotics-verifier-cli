@@ -10,7 +10,7 @@ This project aims to provide deterministic, auditable checks for robotics hardwa
 By contributing, you confirm that you:
 
 - License your contribution under Apache-2.0
-- Agree to the terms in CLA.md (relicensing and commercial use allowed)
+- Agree to the terms in CLA.md
 - Have the right to submit the code
 
 ---
