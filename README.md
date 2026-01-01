@@ -125,6 +125,7 @@ rv check --help            Show check command options
 - Logic rail compatibility between MCU and motor driver
 - Battery C rate vs total peak stall current (motors)
 - Total motor stall current vs driver peak current across all channels
+- Simple I2C address conflicts on a single bus (duplicate device addresses)
 
 **Note**: Checks are skipped when required inputs are missing (zero). This keeps partial specs usable.
 
@@ -205,6 +206,18 @@ Battery max discharge uses the following precedence:
 1) power.battery.max_discharge_a
 2) power.battery.capacity_ah * power.battery.c_rating
 3) power.battery.max_current_a
+
+I2C bus structure (addresses accept decimal or 0x hex):
+
+```yaml
+i2c_buses:
+  - name: "bus0"
+    devices:
+      - name: "imu_left"
+        address_hex: 0x68
+      - name: "imu_right"
+        address_hex: 104
+```
 
 Unset or missing fields are treated as unknown. Some required values will surface as errors during resolution.
 

@@ -54,6 +54,7 @@ func RunAll(spec model.RobotSpec, locs map[string]Location) Report {
 	r.Findings = append(r.Findings, ruleLogicLevelMisMatch(spec, locs)...)
 	r.Findings = append(r.Findings, ruleBatteryCRate(spec, locs)...)
 	r.Findings = append(r.Findings, ruleDriverStallOverload(spec, locs)...)
+	r.Findings = append(r.Findings, ruleI2CAddressConflict(spec, locs)...)
 	return r
 }
 
@@ -423,4 +424,43 @@ func ruleDriverStallOverload(spec model.RobotSpec, locs map[string]Location) []F
 	}
 
 	return nil
+}
+
+func ruleI2CAddressConflict(spec model.RobotSpec, locs map[string]Location) []Finding {
+	if len(spec.I2CBuses) == 0 {
+		return nil
+	}
+
+	var out []Finding
+	for busIndex, bus := range spec.I2CBuses {
+		if len(bus.Devices) == 0 {
+			continue
+		}
+		addresses := make(map[uint16][]string)
+		for _, device := range bus.Devices {
+			addr := uint16(device.AddressHex)
+			if addr == 0 {
+				continue
+			}
+			addresses[addr] = append(addresses[addr], device.Name)
+		}
+		for addr, names := range addresses {
+			if len(names) < 2 {
+				continue
+			}
+			message := fmt.Sprintf(
+				"Devices %s share I2C address 0x%X on bus %s",
+				strings.Join(names, ", "),
+				addr,
+				bus.Name,
+			)
+			path := fmt.Sprintf("i2c_buses[%d].devices", busIndex)
+			out = append(out, withLocation(locs, path, Finding{
+				Severity: SevError,
+				Code:     "I2C_ADDR_CONFLICT",
+				Message:  message,
+			}))
+		}
+	}
+	return out
 }

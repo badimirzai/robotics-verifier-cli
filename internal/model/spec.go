@@ -1,11 +1,20 @@
 package model
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
+
 type RobotSpec struct {
-	Name   string      `yaml:"name"`
-	Power  PowerSpec   `yaml:"power"`
-	Motors []Motor     `yaml:"motors"`
-	Driver MotorDriver `yaml:"motor_driver"`
-	MCU    MCU         `yaml:"mcu"`
+	Name     string      `yaml:"name"`
+	Power    PowerSpec   `yaml:"power"`
+	Motors   []Motor     `yaml:"motors"`
+	Driver   MotorDriver `yaml:"motor_driver"`
+	MCU      MCU         `yaml:"mcu"`
+	I2CBuses []I2CBus    `yaml:"i2c_buses"`
 }
 
 type PowerSpec struct {
@@ -54,4 +63,33 @@ type MCU struct {
 	Name             string  `yaml:"name"`
 	LogicVoltageV    float64 `yaml:"logic_voltage_v"` // usually 3.3 for ESP32
 	MaxGPIOCurrentmA float64 `yaml:"max_gpio_current_ma"`
+}
+
+type I2CBus struct {
+	Name    string      `yaml:"name"`
+	Devices []I2CDevice `yaml:"devices"`
+}
+
+type I2CAddress uint16
+
+func (a *I2CAddress) UnmarshalYAML(value *yaml.Node) error {
+	// Allow decimal or 0x-prefixed hex addresses during YAML decoding.
+	if value.Kind != yaml.ScalarNode {
+		return fmt.Errorf("i2c address must be a scalar")
+	}
+	raw := strings.TrimSpace(value.Value)
+	if raw == "" {
+		return fmt.Errorf("i2c address is empty")
+	}
+	parsed, err := strconv.ParseUint(raw, 0, 16)
+	if err != nil {
+		return fmt.Errorf("invalid i2c address %q: %w", raw, err)
+	}
+	*a = I2CAddress(parsed)
+	return nil
+}
+
+type I2CDevice struct {
+	Name       string     `yaml:"name"`
+	AddressHex I2CAddress `yaml:"address_hex"`
 }

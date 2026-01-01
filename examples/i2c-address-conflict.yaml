@@ -1,0 +1,20 @@
+i2c_buses:
+  - name: "bus0"
+    devices:
+      - name: "imu_left"
+        address_hex: 0x68
+      - name: "imu_right"
+        address_hex: 0x68   # conflict
+        
+mcu:
+  name: "Generic MCU"
+  logic_voltage_v: 3.3
+motor_driver:
+  name: "Generic driver"
+  channels: 1
+  motor_supply_min_v: 6
+  motor_supply_max_v: 12
+  logic_voltage_min_v: 3.0
+  logic_voltage_max_v: 5.5
+  continuous_per_channel_a: 1
+  peak_per_channel_a: 2
