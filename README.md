@@ -125,6 +125,7 @@ rv check --help            Show check command options
 - Logic rail compatibility between MCU and motor driver
 - Battery C rate vs total peak stall current (motors)
 - Total motor stall current vs driver peak current across all channels
+- Simple I2C address conflicts on a single bus (duplicate device addresses)
 
 **Note**: Checks are skipped when required inputs are missing (zero). This keeps partial specs usable.
 

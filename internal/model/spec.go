@@ -55,3 +55,15 @@ type MCU struct {
 	LogicVoltageV    float64 `yaml:"logic_voltage_v"` // usually 3.3 for ESP32
 	MaxGPIOCurrentmA float64 `yaml:"max_gpio_current_ma"`
 }
+
+type I2CBusses struct {
+	I2cBus []I2CBus
+}
+type I2CBus struct {
+	Name    string
+	Devices []I2CDevice
+}
+type I2CDevice struct {
+	Name       string
+	AddressHex uint16
+}

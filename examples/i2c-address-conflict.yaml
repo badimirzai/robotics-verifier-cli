@@ -1,0 +1,7 @@
+i2c_buses:
+  - name: "bus0"
+    devices:
+      - name: "imu_left"
+        address_hex: 0x68
+      - name: "imu_right"
+        address_hex: 0x68   # conflict
