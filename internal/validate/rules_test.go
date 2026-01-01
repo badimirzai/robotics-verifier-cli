@@ -529,6 +529,80 @@ func TestRuleDriverStallOverload(t *testing.T) {
 	}
 }
 
+func TestRuleI2CAddressConflict(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*model.RobotSpec)
+		want   []string
+		not    []string
+	}{
+		{
+			name: "unique_addresses",
+			mutate: func(s *model.RobotSpec) {
+				s.I2CBuses = []model.I2CBus{
+					{
+						Name: "bus0",
+						Devices: []model.I2CDevice{
+							{Name: "imu_left", AddressHex: model.I2CAddress(0x68)},
+							{Name: "imu_right", AddressHex: model.I2CAddress(0x69)},
+						},
+					},
+				}
+			},
+			not: []string{"I2C_ADDR_CONFLICT"},
+		},
+		{
+			name: "conflict_same_bus",
+			mutate: func(s *model.RobotSpec) {
+				s.I2CBuses = []model.I2CBus{
+					{
+						Name: "bus0",
+						Devices: []model.I2CDevice{
+							{Name: "imu_left", AddressHex: model.I2CAddress(0x68)},
+							{Name: "imu_right", AddressHex: model.I2CAddress(0x68)},
+						},
+					},
+				}
+			},
+			want: []string{"I2C_ADDR_CONFLICT"},
+		},
+		{
+			name: "same_address_different_buses",
+			mutate: func(s *model.RobotSpec) {
+				s.I2CBuses = []model.I2CBus{
+					{
+						Name: "bus0",
+						Devices: []model.I2CDevice{
+							{Name: "imu_left", AddressHex: model.I2CAddress(0x68)},
+						},
+					},
+					{
+						Name: "bus1",
+						Devices: []model.I2CDevice{
+							{Name: "imu_right", AddressHex: model.I2CAddress(0x68)},
+						},
+					},
+				}
+			},
+			not: []string{"I2C_ADDR_CONFLICT"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := baseSpec()
+			tt.mutate(&spec)
+			codes := reportCodes(RunAll(spec, nil))
+			for _, c := range tt.want {
+				requireHasCode(t, codes, c)
+			}
+			for _, c := range tt.not {
+				requireNoCode(t, codes, c)
+			}
+		})
+	}
+}
+
 func TestReadmeMinimalVoltageMismatch(t *testing.T) {
 	spec := model.RobotSpec{
 		Power: model.PowerSpec{

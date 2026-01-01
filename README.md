@@ -207,6 +207,18 @@ Battery max discharge uses the following precedence:
 2) power.battery.capacity_ah * power.battery.c_rating
 3) power.battery.max_current_a
 
+I2C bus structure (addresses accept decimal or 0x hex):
+
+```yaml
+i2c_buses:
+  - name: "bus0"
+    devices:
+      - name: "imu_left"
+        address_hex: 0x68
+      - name: "imu_right"
+        address_hex: 104
+```
+
 Unset or missing fields are treated as unknown. Some required values will surface as errors during resolution.
 
 More examples are available in the `examples/` directory.
