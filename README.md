@@ -94,6 +94,8 @@ INFO RAIL_BUDGET_NOTE: logic rail budget set to 1.00A (v1 does not estimate MCU+
 exit code: 2
 ```
 
+Human-readable output uses color in terminals. Disable with `--no-color` or the standard `NO_COLOR` environment variable.
+
 Interpretation:
 - The supply voltage cannot power the driver. This is a hard stop.
 - The driver continuous current is lower than motor nominal current margin. Proceeding is risky.
