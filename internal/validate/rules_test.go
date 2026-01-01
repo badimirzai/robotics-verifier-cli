@@ -162,12 +162,11 @@ func TestRuleDriverCurrentHeadroom(t *testing.T) {
 		not    []string
 	}{
 		{
-			name: "motor_count_invalid",
+			name: "motor_count_missing",
 			mutate: func(s *model.RobotSpec) {
 				s.Motors[0].Count = 0
 			},
-			want: []string{"MOTOR_COUNT_INVALID"},
-			not:  []string{"DRV_PEAK_LT_STALL", "DRV_CONT_LOW_MARGIN"},
+			not: []string{"DRV_PEAK_LT_STALL", "DRV_CONT_LOW_MARGIN"},
 		},
 		{
 			name: "peak_less_than_stall",
@@ -197,7 +196,7 @@ func TestRuleDriverCurrentHeadroom(t *testing.T) {
 		{
 			name:   "headroom_ok",
 			mutate: func(s *model.RobotSpec) {},
-			not:    []string{"MOTOR_COUNT_INVALID", "DRV_PEAK_LT_STALL", "DRV_CONT_LOW_MARGIN"},
+			not:    []string{"DRV_PEAK_LT_STALL", "DRV_CONT_LOW_MARGIN"},
 		},
 	}
 
@@ -477,6 +476,59 @@ func TestRuleBatteryCRate(t *testing.T) {
 	}
 }
 
+func TestRuleDriverStallOverload(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*model.RobotSpec)
+		want   []string
+		not    []string
+	}{
+		{
+			name: "stall_exceeds_driver_peak",
+			mutate: func(s *model.RobotSpec) {
+				s.Motors[0].StallCurrentA = 8
+			},
+			want: []string{"DRV_PEAK_OVERLOAD"},
+			not:  []string{"DRV_PEAK_MARGIN_LOW"},
+		},
+		{
+			name: "stall_below_warning_threshold",
+			mutate: func(s *model.RobotSpec) {
+				s.Motors[0].StallCurrentA = 4
+			},
+			not: []string{"DRV_PEAK_OVERLOAD", "DRV_PEAK_MARGIN_LOW"},
+		},
+		{
+			name: "missing_driver_peak",
+			mutate: func(s *model.RobotSpec) {
+				s.Driver.PeakPerChA = 0
+			},
+			not: []string{"DRV_PEAK_OVERLOAD", "DRV_PEAK_MARGIN_LOW"},
+		},
+		{
+			name: "missing_motor_stall",
+			mutate: func(s *model.RobotSpec) {
+				s.Motors[0].StallCurrentA = 0
+			},
+			not: []string{"DRV_PEAK_OVERLOAD", "DRV_PEAK_MARGIN_LOW"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := baseSpec()
+			tt.mutate(&spec)
+			codes := reportCodes(RunAll(spec, nil))
+			for _, c := range tt.want {
+				requireHasCode(t, codes, c)
+			}
+			for _, c := range tt.not {
+				requireNoCode(t, codes, c)
+			}
+		})
+	}
+}
+
 func TestReadmeMinimalVoltageMismatch(t *testing.T) {
 	spec := model.RobotSpec{
 		Power: model.PowerSpec{
@@ -529,7 +581,7 @@ func TestExitCodeSemantics(t *testing.T) {
 	}
 
 	broken := baseSpec()
-	broken.Power.Battery.VoltageV = 0
+	broken.Power.Battery.VoltageV = -1
 	if !RunAll(broken, nil).HasErrors() {
 		t.Fatal("expected broken spec to return exit code 2")
 	}

@@ -126,6 +126,8 @@ rv check --help            Show check command options
 - Battery C rate vs total peak stall current (motors)
 - Total motor stall current vs driver peak current across all channels
 
+**Note**: Checks are skipped when required inputs are missing (zero). This keeps partial specs usable.
+
 Findings:
 - INFO for context
 - WARN for risk
