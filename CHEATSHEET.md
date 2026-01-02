@@ -22,6 +22,7 @@ rv check --help                        Show check command options
 --output json             print machine readable JSON to stdout
 --pretty                  pretty print JSON to stdout (requires --output json)
 --out-file <path>         write compact JSON to file (requires --output json)
+--no-color                disable colored output
 --debug                   enable debug mode (or use RV_DEBUG=1)
 ```
 
@@ -41,4 +42,5 @@ rv check examples/minimal_voltage_mismatch.yaml --output json
 rv check examples/minimal_voltage_mismatch.yaml --output json --pretty
 rv check examples/minimal_voltage_mismatch.yaml --output json --out-file result.json
 rv check examples/minimal_voltage_mismatch.yaml --output json --pretty --out-file result.json
+NO_COLOR=1 rv check examples/minimal_voltage_mismatch.yaml
 ```

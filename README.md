@@ -108,6 +108,8 @@ Interpretation:
 
 [▶️ Watch full quality demo (MP4)](./assets/demo.mp4)
 
+<video src="assets/mobile-robot-demo.mp4" controls></video>
+
 ### Core commands
 
 ```text
