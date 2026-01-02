@@ -108,7 +108,12 @@ Interpretation:
 
 [▶️ Watch full quality demo (MP4)](./assets/demo.mp4)
 
+<video src="assets/demo-captions.mov" controls></video>
+
+
 <video src="assets/mobile-robot-demo.mp4" controls></video>
+
+[▶ Watch demo (38s)](assets/mobile-robot-demo.mp4)
 
 ### Core commands
 
