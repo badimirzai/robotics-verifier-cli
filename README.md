@@ -84,15 +84,15 @@ rv check spec.yaml
 
 Example output:
 
-```text
+<pre>
 rv check
 --------------
-INFO DRV_CHANNELS_OK: channels OK: 1 motors <= 1 motor_driver.channels
-ERROR DRV_SUPPLY_RANGE: battery 12.00V outside motor_driver motor supply range [18.00, 24.00]V
-WARN DRV_CONT_LOW_MARGIN: motor_driver.continuous_per_channel_a 0.60A may be low for motor DC motor nominal 1.00A (want >= 1.25A)
-INFO RAIL_BUDGET_NOTE: logic rail budget set to 1.00A (v1 does not estimate MCU+driver logic draw yet)
+<span style="color:#00a6d6">INFO</span> DRV_CHANNELS_OK: channels OK: 1 motors &lt;= 1 motor_driver.channels
+<span style="color:#d10f1a">ERROR</span> DRV_SUPPLY_RANGE: battery 12.00V outside motor_driver motor supply range [18.00, 24.00]V
+<span style="color:#c99200">WARN</span> DRV_CONT_LOW_MARGIN: motor_driver.continuous_per_channel_a 0.60A may be low for motor DC motor nominal 1.00A (want &gt;= 1.25A)
+<span style="color:#00a6d6">INFO</span> RAIL_BUDGET_NOTE: logic rail budget set to 1.00A (v1 does not estimate MCU+driver logic draw yet)
 exit code: 2
-```
+</pre>
 
 Human-readable output uses color in terminals (header/OK green, INFO cyan, WARN yellow, ERROR red). Disable with `--no-color` or the standard `NO_COLOR` environment variable (set to any non-empty value, e.g. `NO_COLOR=1`).
 
