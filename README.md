@@ -104,16 +104,14 @@ Interpretation:
 
 ## Demo
 
-![alt text](./assets/demo.gif)
-
-[▶️ Watch full quality demo (MP4)](./assets/demo.mp4)
-
-<video src="assets/demo-captions.mov" controls></video>
+https://github.com/user-attachments/assets/3c73410f-bda8-49a3-9171-b888dff7446e
 
 
-<video src="assets/mobile-robot-demo.mp4" controls></video>
+**Mobile Robot problem demo:**  
+https://github.com/badimirzai/robotics-verifier-cli/releases/latest/download/mobile-robot-demo.mov
 
-[▶ Watch demo (38s)](assets/mobile-robot-demo.mp4)
+
+
 
 ### Core commands
 
