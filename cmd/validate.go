@@ -176,16 +176,15 @@ func renderJSONOutputs(path string, report validate.Report, exitCode int, pretty
 		}
 	}
 
-	if outFile != "" && !pretty {
-		fmt.Printf("Written to %s\n", outFile)
-		return nil
-	}
-
 	prettyBytes, err := output.FormatJSON(payload, pretty)
 	if err != nil {
 		return internalError(err)
 	}
+	prettyBytes = output.ColorizeJSON(prettyBytes)
 	fmt.Println(string(prettyBytes))
+	if outFile != "" && !pretty {
+		fmt.Printf("Written to %s\n", outFile)
+	}
 	return nil
 }
 
@@ -212,16 +211,15 @@ func renderJSONErrorOutputs(specFile string, exitCode int, message string, prett
 		}
 	}
 
-	if outFile != "" && !pretty {
-		fmt.Printf("Written to %s\n", outFile)
-		return nil
-	}
-
 	b, err := output.FormatJSON(payload, pretty)
 	if err != nil {
 		return internalError(err)
 	}
+	b = output.ColorizeJSON(b)
 	fmt.Println(string(b))
+	if outFile != "" && !pretty {
+		fmt.Printf("Written to %s\n", outFile)
+	}
 	return nil
 }
 
