@@ -1,0 +1,44 @@
+name: "4wd-mini-rover-problem"
+
+power:
+  battery:
+    chemistry: "LiPo"
+    voltage_v: 14.8        # 4S LiPo (common mistake: picked for 'more torque')
+    capacity_ah: 2.2
+    c_rating: 5            # 2.2Ah * 5C = 11A max (too low for 4 motors at stall)
+  logic_rail:
+    voltage_v: 5.0
+    max_current_a: 1.0
+
+mcu:
+  name: "ESP32-class MCU"
+  logic_voltage_v: 3.3
+  max_gpio_current_ma: 12
+
+motor_driver:
+  name: "TB6612FNG-like driver (4ch assumed)"
+  motor_supply_min_v: 4.5
+  motor_supply_max_v: 13.5     # TB6612 motor VM max around this range
+  continuous_per_channel_a: 1.0
+  peak_per_channel_a: 3.2
+  channels: 4
+  logic_voltage_min_v: 4.5     # 5V logic-only assumption (common integration trap)
+  logic_voltage_max_v: 5.5
+
+motors:
+  - name: "TT-style DC gearmotor (12V variant)"
+    count: 4
+    voltage_min_v: 9
+    voltage_max_v: 12
+    stall_current_a: 6.0        # realistic stall for small motors + gearbox under load
+    nominal_current_a: 1.5
+
+i2c_buses:
+  - name: "i2c0"
+    devices:
+      - name: "IMU (MPU6050-like)"
+        address_hex: 0x68
+      - name: "IMU #2 / backup (also 0x68)"
+        address_hex: 0x68        # conflict, classic
+      - name: "ToF sensor (VL53L0X-like)"
+        address_hex: 0x29

@@ -1,22 +1,26 @@
 # Robotics Verifier (rv-cli) [![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml) [![Release](https://img.shields.io/github/v/release/badimirzai/robotics-verifier-cli?label=release)](https://github.com/badimirzai/robotics-verifier-cli/releases)
 
-A command line tool for verifying robotics hardware specifications **before** you build.
-It flags electrical integration failures early, so they never reach fabrication or firmware.
+A **hardware compatibility linter** for robotics.
 
-Robot integration hides failure points: voltage mismatches, torque shortfalls, driver limits, current spikes, logic-rail traps.
+Run `rv check` on a YAML spec to catch electrical integration failures **before you build**. Stop frying components and wasting weeks on shipping cycles.
 
-This tool checks your configuration and surfaces those mistakes immediately, with deterministic rules and explainable output.
+```bash
+# Verify your build in seconds
+rv check robot_spec.yaml 
+```
 
-No hidden network calls. No guessing. No AI hallucinations.
-It only checks what you tell it to check - nothing more, nothing less.
+### The Problem
+Most robotics failures happen before the first line of code ever runs. Incorrect voltage ranges, drivers that can't handle stall currents, and logic level mismatches waste time and damage expensive parts.
 
----
+This tool enforces a hardware contract so these "silent killers" surface immediately-both on your local machine and in CI.
 
-## Why
+* **Catch Electrical Mismatches**: Detects logic level gaps (e.g., 3.3V vs 5V), I2C address conflicts, and voltage range violations.
 
-Most robotics problems start before code runs. Incorrect voltage ranges. Drivers that cannot supply required current. Logic level mismatches. These issues waste time, damage parts, and block progress.
+* **Mechanical Safety**: Validates motor torque/current requirements against driver peak and continuous limits.
 
-This tool enforces a hardware contract so preventable failures surface immediately. Local and in CI.
+* **Power Budgeting**: Checks battery C-rate and discharge limits against total peak stall currents.
+
+* **Deterministic & Private**: No AI hallucinations and no network calls. It only validates the specs you provide.
 
 ---
 
@@ -36,6 +40,8 @@ Requires Go **1.25.5** or newer (https://go.dev/dl/).
 go install github.com/badimirzai/robotics-verifier-cli/cmd/rv@latest
 rv --help
 ```
+
+
 
 ### Minimal example
 
@@ -84,37 +90,34 @@ rv check spec.yaml
 
 Example output:
 
-```text
+<pre>
 rv check
 --------------
-INFO DRV_CHANNELS_OK: channels OK: 1 motors <= 1 motor_driver.channels
-ERROR DRV_SUPPLY_RANGE: battery 12.00V outside motor_driver motor supply range [18.00, 24.00]V
-WARN DRV_CONT_LOW_MARGIN: motor_driver.continuous_per_channel_a 0.60A may be low for motor DC motor nominal 1.00A (want >= 1.25A)
-INFO RAIL_BUDGET_NOTE: logic rail budget set to 1.00A (v1 does not estimate MCU+driver logic draw yet)
+<span style="color:#00a6d6">INFO</span> DRV_CHANNELS_OK: channels OK: 1 motors &lt;= 1 motor_driver.channels
+<span style="color:#d10f1a">ERROR</span> DRV_SUPPLY_RANGE: battery 12.00V outside motor_driver motor supply range [18.00, 24.00]V
+<span style="color:#c99200">WARN</span> DRV_CONT_LOW_MARGIN: motor_driver.continuous_per_channel_a 0.60A may be low for motor DC motor nominal 1.00A (want &gt;= 1.25A)
+<span style="color:#00a6d6">INFO</span> RAIL_BUDGET_NOTE: logic rail budget set to 1.00A (v1 does not estimate MCU+driver logic draw yet)
 exit code: 2
-```
+</pre>
+
+Human-readable output uses color in terminals (header/OK green, INFO cyan, WARN yellow, ERROR red). Disable with `--no-color` or the standard `NO_COLOR` environment variable (set to any non-empty value, e.g. `NO_COLOR=1`).
 
 Interpretation:
 - The supply voltage cannot power the driver. This is a hard stop.
 - The driver continuous current is lower than motor nominal current margin. Proceeding is risky.
 
+
+## Example (video)
+https://github.com/user-attachments/assets/3c73410f-bda8-49a3-9171-b888dff7446e
+
+
+Example run catching voltage, current, battery C-rate, logic-level, and I2C conflicts in a 4-wheel mobile robot before anything gets built. 
+
 ---
 
-## Demo
 
-![alt text](./assets/demo.gif)
 
-[▶️ Watch full quality demo (MP4)](./assets/demo.mp4)
 
-### Core commands
-
-```text
-rv check <file.yaml>       Run analysis
-rv version                 Show installed version
-rv check --output json     Emit JSON findings
-rv --help                  Show all commands and flags
-rv check --help            Show check command options
-```
 
 ## What it checks today
 
@@ -126,6 +129,17 @@ rv check --help            Show check command options
 - Battery C rate vs total peak stall current (motors)
 - Total motor stall current vs driver peak current across all channels
 - Simple I2C address conflicts on a single bus (duplicate device addresses)
+
+
+### Core commands
+
+```text
+rv check <file.yaml>       Run analysis
+rv version                 Show installed version
+rv check --output json     Emit JSON findings
+rv --help                  Show all commands and flags
+rv check --help            Show check command options
+```
 
 **Note**: Checks are skipped when required inputs are missing (zero). This keeps partial specs usable.
 
@@ -165,6 +179,8 @@ JSON pretty + file output example:
 ```bash
 rv check specs/robot.yaml --output json --pretty --out-file report.json
 ```
+
+When using `--output json` or `--output json --pretty` in a terminal, severity values are colorized for readability. Colors are never used for JSON files or non-TTY output.
 
 ---
 

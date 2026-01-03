@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/badimirzai/robotics-verifier-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -44,12 +45,20 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "Print internal error details")
+	rootCmd.PersistentFlags().Bool("no-color", false, "Disable colored output")
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
 		if cmd.Flags().Changed("debug") {
 			debugEnabled, _ = cmd.Flags().GetBool("debug")
-			return
+		} else {
+			debugEnabled = envBool("RV_DEBUG")
 		}
-		debugEnabled = envBool("RV_DEBUG")
+
+		noColor, _ := cmd.Flags().GetBool("no-color")
+		colorsEnabled := ui.DefaultColorEnabled()
+		if noColor {
+			colorsEnabled = false
+		}
+		ui.EnableColors(colorsEnabled)
 	}
 	// subcommands register themselves in init()
 }
