@@ -108,9 +108,10 @@ Interpretation:
 
 
 ## Example (video)
-Example run catching voltage, current, battery C-rate, logic-level, and I2C conflicts in a 4-wheel mobile robot before anything gets built. 
-
 https://github.com/user-attachments/assets/3c73410f-bda8-49a3-9171-b888dff7446e
+
+
+Example run catching voltage, current, battery C-rate, logic-level, and I2C conflicts in a 4-wheel mobile robot before anything gets built. 
 ---
 
 
