@@ -1,22 +1,26 @@
 # Robotics Verifier (rv-cli) [![CI](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/badimirzai/robotics-verifier-cli/actions/workflows/ci.yaml) [![Release](https://img.shields.io/github/v/release/badimirzai/robotics-verifier-cli?label=release)](https://github.com/badimirzai/robotics-verifier-cli/releases)
 
-A command line tool for verifying robotics hardware specifications **before** you build.
-It flags electrical integration failures early, so they never reach fabrication or firmware.
+A **hardware compatibility linter** for robotics.
 
-Robot integration hides failure points: voltage mismatches, torque shortfalls, driver limits, current spikes, logic-rail traps.
+Run `rv check` on a YAML spec to catch electrical integration failures **before you build**. Stop frying components and wasting weeks on shipping cycles.
 
-This tool checks your configuration and surfaces those mistakes immediately, with deterministic rules and explainable output.
+```bash
+# Verify your build in seconds
+rv check robot_spec.yaml 
+```
 
-No hidden network calls. No guessing. No AI hallucinations.
-It only checks what you tell it to check - nothing more, nothing less.
+### The Problem
+Most robotics failures happen before the first line of code ever runs. Incorrect voltage ranges, drivers that can't handle stall currents, and logic level mismatches waste time and damage expensive parts.
 
----
+This tool enforces a hardware contract so these "silent killers" surface immediately-both on your local machine and in CI.
 
-## Why
+* **Catch Electrical Mismatches**: Detects logic level gaps (e.g., 3.3V vs 5V), I2C address conflicts, and voltage range violations.
 
-Most robotics problems start before code runs. Incorrect voltage ranges. Drivers that cannot supply required current. Logic level mismatches. These issues waste time, damage parts, and block progress.
+* **Mechanical Safety**: Validates motor torque/current requirements against driver peak and continuous limits.
 
-This tool enforces a hardware contract so preventable failures surface immediately. Local and in CI.
+* **Power Budgeting**: Checks battery C-rate and discharge limits against total peak stall currents.
+
+* **Deterministic & Private**: No AI hallucinations and no network calls. It only validates the specs you provide.
 
 ---
 
@@ -36,6 +40,8 @@ Requires Go **1.25.5** or newer (https://go.dev/dl/).
 go install github.com/badimirzai/robotics-verifier-cli/cmd/rv@latest
 rv --help
 ```
+
+
 
 ### Minimal example
 
@@ -100,28 +106,16 @@ Interpretation:
 - The supply voltage cannot power the driver. This is a hard stop.
 - The driver continuous current is lower than motor nominal current margin. Proceeding is risky.
 
----
 
-## Demo
+## Example (video)
+Example run catching voltage, current, battery C-rate, logic-level, and I2C conflicts in a 4-wheel mobile robot before anything gets built. 
 
 https://github.com/user-attachments/assets/3c73410f-bda8-49a3-9171-b888dff7446e
-
-
-**Mobile Robot problem demo:**  
-https://github.com/badimirzai/robotics-verifier-cli/releases/latest/download/mobile-robot-demo.mov
+---
 
 
 
 
-### Core commands
-
-```text
-rv check <file.yaml>       Run analysis
-rv version                 Show installed version
-rv check --output json     Emit JSON findings
-rv --help                  Show all commands and flags
-rv check --help            Show check command options
-```
 
 ## What it checks today
 
@@ -133,6 +127,17 @@ rv check --help            Show check command options
 - Battery C rate vs total peak stall current (motors)
 - Total motor stall current vs driver peak current across all channels
 - Simple I2C address conflicts on a single bus (duplicate device addresses)
+
+
+### Core commands
+
+```text
+rv check <file.yaml>       Run analysis
+rv version                 Show installed version
+rv check --output json     Emit JSON findings
+rv --help                  Show all commands and flags
+rv check --help            Show check command options
+```
 
 **Note**: Checks are skipped when required inputs are missing (zero). This keeps partial specs usable.
 
