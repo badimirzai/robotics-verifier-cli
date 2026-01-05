@@ -224,6 +224,27 @@ This is a linter. Not a simulator or optimizer.
 
 ---
 
+## Using built-in parts
+
+The repo ships with a small parts library under `parts/`. Reference a part by ID using `part:` and override any fields you need; explicit values in your spec always win.
+
+```yaml
+mcu:
+  part: mcus/esp32-s3-devkitc-1
+
+motor_driver:
+  part: drivers/tb6612fng
+
+motors:
+  - part: motors/tt_6v_dc_gearmotor
+    count: 2
+    stall_current_a: 1.8 # override part default
+```
+
+I2C sensor parts (e.g. `sensors/mpu6050`) include default addresses; you can use them under `i2c_buses.devices` with `part:` or set `address_hex` directly.
+
+---
+
 ## YAML specification
 
 The core fields used in validation are:

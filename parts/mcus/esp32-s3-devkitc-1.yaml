@@ -1,0 +1,7 @@
+part_id: mcus/esp32-s3-devkitc-1
+type: mcu
+name: ESP32-S3-DevKitC-1
+
+mcu:
+  # Board uses ESP32-S3 3.3V logic domain (Espressif docs).
+  logic_voltage_v: 3.3

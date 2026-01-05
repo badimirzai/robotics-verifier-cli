@@ -1,0 +1,10 @@
+part_id: motors/tt_6v_dc_gearmotor
+type: motor
+name: TT 6V DC gearmotor
+
+motor:
+  # Typical TT motor listings at 6V (common kit motors).
+  voltage_min_v: 3.0
+  voltage_max_v: 6.0
+  nominal_current_a: 0.2
+  stall_current_a: 1.5

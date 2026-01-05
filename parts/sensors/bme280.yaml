@@ -1,0 +1,8 @@
+part_id: sensors/bme280
+type: i2c_sensor
+name: BME280 Environmental Sensor
+mpn: BME280
+
+i2c_device:
+  # Default address 0x76 (datasheet), alternate 0x77 via SDO pin.
+  address_hex: 0x76

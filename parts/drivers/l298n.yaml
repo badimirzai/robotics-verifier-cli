@@ -1,0 +1,19 @@
+part_id: drivers/l298n
+type: motor_driver
+name: L298N Dual H-Bridge (module)
+mpn: L298N
+
+motor_driver:
+  channels: 2
+
+  # Motor supply (Vs) from ST L298 datasheet (module uses same IC).
+  motor_supply_min_v: 5.0
+  motor_supply_max_v: 46.0
+
+  # Logic supply (Vss) 5V logic window; module typically expects 5V logic.
+  logic_voltage_min_v: 4.5
+  logic_voltage_max_v: 7.0
+
+  # Typical module ratings with basic heatsinking.
+  continuous_per_channel_a: 1.0
+  peak_per_channel_a: 2.0

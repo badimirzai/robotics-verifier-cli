@@ -3,6 +3,9 @@ type: motor
 name: Generic DC gearmotor (small 12V-class)
 
 motor:
+  # Typical 12V-class gearmotor listings (generic vendor data).
+  voltage_min_v: 9.0
+  voltage_max_v: 12.0
   nominal_current_a: 0.9
   stall_current_a: 2.5
 

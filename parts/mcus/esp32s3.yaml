@@ -3,4 +3,5 @@ type: mcu
 name: ESP32-S3
 
 mcu:
+  # ESP32-S3 logic domain is 3.3V (Espressif datasheet).
   logic_voltage_v: 3.3

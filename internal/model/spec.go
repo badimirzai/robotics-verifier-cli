@@ -90,6 +90,7 @@ func (a *I2CAddress) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type I2CDevice struct {
+	Part       string     `yaml:"part,omitempty"`
 	Name       string     `yaml:"name"`
 	AddressHex I2CAddress `yaml:"address_hex"`
 }
