@@ -1,0 +1,7 @@
+part_id: mcus/arduino-uno-r3
+type: mcu
+name: Arduino Uno R3
+
+mcu:
+  # ATmega328P logic on Uno R3 is 5V (Arduino documentation).
+  logic_voltage_v: 5.0

@@ -6,14 +6,14 @@ mpn: TB6612FNG
 motor_driver:
   channels: 2
 
-  # Motor supply (VM)
+  # Motor supply (VM) from Toshiba TB6612FNG datasheet.
   motor_supply_min_v: 2.5
   motor_supply_max_v: 13.5
 
-  # Logic supply (VCC)
+  # Logic supply (VCC) from datasheet.
   logic_voltage_min_v: 2.7
   logic_voltage_max_v: 5.5
 
-  # Output current (per channel)
+  # Output current (per channel), typical continuous/peak ratings.
   continuous_per_channel_a: 1.2
   peak_per_channel_a: 3.2

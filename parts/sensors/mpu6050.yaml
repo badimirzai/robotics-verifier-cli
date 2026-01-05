@@ -1,0 +1,8 @@
+part_id: sensors/mpu6050
+type: i2c_sensor
+name: MPU-6050 IMU
+mpn: MPU-6050
+
+i2c_device:
+  # Default address when AD0 is low (datasheet). Alt 0x69 when AD0 high.
+  address_hex: 0x68

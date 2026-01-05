@@ -93,3 +93,22 @@ func TestStore_LoadMissingPart_ReturnsError(t *testing.T) {
 		t.Fatalf("expected error when loading missing driver, got nil")
 	}
 }
+
+func TestStore_LoadI2CSensor_MPU6050(t *testing.T) {
+	store := NewStore(testPartsDir(t))
+
+	sensor, err := store.LoadI2CSensor("sensors/mpu6050")
+	if err != nil {
+		t.Fatalf("LoadI2CSensor(mpu6050) returned error: %v", err)
+	}
+
+	if sensor.Type != "i2c_sensor" {
+		t.Errorf("expected Type=i2c_sensor, got %q", sensor.Type)
+	}
+	if sensor.Name == "" {
+		t.Errorf("expected Name to be set")
+	}
+	if sensor.I2CDevice.AddressHex == 0 {
+		t.Errorf("expected non-zero address, got 0")
+	}
+}

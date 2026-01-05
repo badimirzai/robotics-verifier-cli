@@ -1,0 +1,10 @@
+part_id: motors/n20_6v_micro_gearmotor
+type: motor
+name: N20 micro gearmotor (6V)
+
+motor:
+  # Representative N20 6V micro gearmotor specs from common vendor listings.
+  voltage_min_v: 3.0
+  voltage_max_v: 6.0
+  nominal_current_a: 0.12
+  stall_current_a: 0.8

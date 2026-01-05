@@ -37,6 +37,17 @@ func ResolveAll(spec model.RobotSpec, store *parts.Store) (model.RobotSpec, erro
 	}
 	resolved.Motors = motors
 
+	// I2C buses
+	buses := make([]model.I2CBus, len(spec.I2CBuses))
+	for i, bus := range spec.I2CBuses {
+		rb, err := resolveI2CBus(bus, store)
+		if err != nil {
+			return model.RobotSpec{}, fmt.Errorf("i2c_buses[%d]: %w", i, err)
+		}
+		buses[i] = rb
+	}
+	resolved.I2CBuses = buses
+
 	return resolved, nil
 }
 
@@ -125,6 +136,12 @@ func resolveMotor(in model.Motor, store *parts.Store) (model.Motor, error) {
 			return model.Motor{}, fmt.Errorf("load motor part %q: %w", in.Part, err)
 		}
 
+		if out.VoltageMinV == 0 {
+			out.VoltageMinV = p.Motor.VoltageMinV
+		}
+		if out.VoltageMaxV == 0 {
+			out.VoltageMaxV = p.Motor.VoltageMaxV
+		}
 		if out.NominalCurrentA == 0 {
 			out.NominalCurrentA = p.Motor.NominalCurrentA
 		}
@@ -141,6 +158,39 @@ func resolveMotor(in model.Motor, store *parts.Store) (model.Motor, error) {
 	}
 	if out.StallCurrentA == 0 {
 		return model.Motor{}, fmt.Errorf("motors[].stall_current_a missing after resolving")
+	}
+
+	return out, nil
+}
+
+func resolveI2CBus(in model.I2CBus, store *parts.Store) (model.I2CBus, error) {
+	out := in
+	devices := make([]model.I2CDevice, len(in.Devices))
+	for i, d := range in.Devices {
+		rd, err := resolveI2CDevice(d, store)
+		if err != nil {
+			return model.I2CBus{}, fmt.Errorf("devices[%d]: %w", i, err)
+		}
+		devices[i] = rd
+	}
+	out.Devices = devices
+	return out, nil
+}
+
+func resolveI2CDevice(in model.I2CDevice, store *parts.Store) (model.I2CDevice, error) {
+	out := in
+
+	if in.Part != "" {
+		p, err := store.LoadI2CSensor(in.Part)
+		if err != nil {
+			return model.I2CDevice{}, fmt.Errorf("load i2c sensor part %q: %w", in.Part, err)
+		}
+		if out.Name == "" {
+			out.Name = p.Name
+		}
+		if out.AddressHex == 0 {
+			out.AddressHex = p.I2CDevice.AddressHex
+		}
 	}
 
 	return out, nil

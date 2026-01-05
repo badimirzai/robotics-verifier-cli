@@ -1,0 +1,8 @@
+part_id: sensors/vl53l0x
+type: i2c_sensor
+name: VL53L0X Time-of-Flight Sensor
+mpn: VL53L0X
+
+i2c_device:
+  # Default I2C address per ST datasheet.
+  address_hex: 0x29

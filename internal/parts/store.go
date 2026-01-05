@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/badimirzai/robotics-verifier-cli/internal/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,6 +36,8 @@ type MotorPartFile struct {
 	Name   string `yaml:"name"`
 
 	Motor struct {
+		VoltageMinV     float64 `yaml:"voltage_min_v"`
+		VoltageMaxV     float64 `yaml:"voltage_max_v"`
 		NominalCurrentA float64 `yaml:"nominal_current_a"`
 		StallCurrentA   float64 `yaml:"stall_current_a"`
 	} `yaml:"motor"`
@@ -50,6 +53,19 @@ type MCUPartFile struct {
 	MCU struct {
 		LogicVoltageV float64 `yaml:"logic_voltage_v"`
 	} `yaml:"mcu"`
+}
+
+// I2CSensorPartFile represents the YAML structure for an I2C sensor device.
+// Example: parts/sensors/mpu6050.yaml
+type I2CSensorPartFile struct {
+	PartID string `yaml:"part_id"`
+	Type   string `yaml:"type"`
+	Name   string `yaml:"name"`
+	MPN    string `yaml:"mpn"`
+
+	I2CDevice struct {
+		AddressHex model.I2CAddress `yaml:"address_hex"`
+	} `yaml:"i2c_device"`
 }
 
 // Store knows how to load part files from a base directory (usually "./parts").
@@ -92,6 +108,18 @@ func (s *Store) LoadMCU(partID string) (MCUPartFile, error) {
 	}
 	if part.Type != "mcu" {
 		return MCUPartFile{}, fmt.Errorf("expected type mcu, got %q", part.Type)
+	}
+	return part, nil
+}
+
+// LoadI2CSensor loads an I2C sensor part by ID, e.g. "sensors/mpu6050".
+func (s *Store) LoadI2CSensor(partID string) (I2CSensorPartFile, error) {
+	var part I2CSensorPartFile
+	if err := s.loadPart(partID, &part); err != nil {
+		return I2CSensorPartFile{}, err
+	}
+	if part.Type != "i2c_sensor" {
+		return I2CSensorPartFile{}, fmt.Errorf("expected type i2c_sensor, got %q", part.Type)
 	}
 	return part, nil
 }
