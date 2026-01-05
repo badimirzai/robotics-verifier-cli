@@ -44,6 +44,10 @@ rv --help
 ### Try it in 30 seconds
 
 ```bash
+rv init --list
+# templates:
+# - 4wd-problem
+# - 4wd-clean
 rv init --template 4wd-problem
 # Wrote robot.yaml (template: 4wd-problem)
 
