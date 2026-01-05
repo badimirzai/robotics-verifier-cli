@@ -11,6 +11,10 @@ rv check <file.yaml> --output json --out-file report.json
                                       Write compact JSON to file, stdout says "Written to ..."
 rv check <file.yaml> --output json --pretty --out-file report.json
                                       Pretty JSON to stdout + compact JSON to file
+rv init --list                        List available templates
+rv init --template <name>             Write a template to robot.yaml
+rv init --template <name> --out path  Write a template to a specific path
+rv init --template <name> --force     Overwrite existing output file
 rv version                             Show installed version
 rv --help                              Show all commands and flags
 rv check --help                        Show check command options
@@ -43,4 +47,8 @@ rv check examples/minimal_voltage_mismatch.yaml --output json --pretty
 rv check examples/minimal_voltage_mismatch.yaml --output json --out-file result.json
 rv check examples/minimal_voltage_mismatch.yaml --output json --pretty --out-file result.json
 NO_COLOR=1 rv check examples/minimal_voltage_mismatch.yaml
+rv init --template 4wd-problem
+rv check robot.yaml
+rv init --template 4wd-clean --out robot.yaml --force
+rv check robot.yaml
 ```
