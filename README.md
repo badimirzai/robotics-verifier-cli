@@ -41,6 +41,26 @@ go install github.com/badimirzai/robotics-verifier-cli/cmd/rv@latest
 rv --help
 ```
 
+### Try it in 30 seconds
+
+```bash
+rv init --list
+# templates:
+# - 4wd-problem
+# - 4wd-clean
+rv init --template 4wd-problem
+# Wrote robot.yaml (template: 4wd-problem)
+
+rv check robot.yaml
+# shows multiple ERROR/WARN findings, exit code 2
+
+rv init --template 4wd-clean --out robot.yaml --force
+# Wrote robot.yaml (template: 4wd-clean)
+
+rv check robot.yaml
+# clean (or WARN-only if you intentionally keep some warnings), exit code 0
+```
+
 
 
 ### Minimal example
