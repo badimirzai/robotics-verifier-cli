@@ -245,6 +245,33 @@ I2C sensor parts (e.g. `sensors/mpu6050`) include default addresses; you can use
 
 ---
 
+## Project-local parts
+
+If you have project-specific parts, put them in `./rv_parts/` relative to where you run `rv`. Example layout:
+
+```
+rv_parts/
+  motors/
+    custom_gear_motor.yaml
+  drivers/
+    custom_driver.yaml
+```
+
+Reference them by ID in your spec:
+
+```yaml
+motor_driver:
+  part: drivers/custom_driver
+
+motors:
+  - part: motors/custom_gear_motor
+    count: 2
+```
+
+The resolver searches directories in this order (earlier wins): `./rv_parts`, built-in `parts/`, `--parts-dir` (repeatable), and `RV_PARTS_DIRS` (split by your OS path list separator, `:` on Unix, `;` on Windows).
+
+---
+
 ## YAML specification
 
 The core fields used in validation are:
