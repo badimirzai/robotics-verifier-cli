@@ -1,8 +1,10 @@
 package parts
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -91,6 +93,72 @@ func TestStore_LoadMissingPart_ReturnsError(t *testing.T) {
 
 	if _, err := store.LoadDriver("drivers/does_not_exist"); err == nil {
 		t.Fatalf("expected error when loading missing driver, got nil")
+	}
+}
+
+func TestStore_LoadMotor_PrefersEarlierDir(t *testing.T) {
+	tmp := t.TempDir()
+	localDir := filepath.Join(tmp, "rv_parts")
+	builtInDir := filepath.Join(tmp, "parts")
+	if err := os.MkdirAll(filepath.Join(localDir, "motors"), 0o755); err != nil {
+		t.Fatalf("mkdir local parts: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(builtInDir, "motors"), 0o755); err != nil {
+		t.Fatalf("mkdir built-in parts: %v", err)
+	}
+
+	partID := "motors/test_motor"
+	localPart := `part_id: motors/test_motor
+type: motor
+name: Local Motor
+motor:
+  voltage_min_v: 6
+  voltage_max_v: 12
+  nominal_current_a: 0.5
+  stall_current_a: 1.2
+`
+	builtInPart := `part_id: motors/test_motor
+type: motor
+name: Built-in Motor
+motor:
+  voltage_min_v: 4
+  voltage_max_v: 9
+  nominal_current_a: 0.4
+  stall_current_a: 1.0
+`
+	if err := os.WriteFile(filepath.Join(localDir, "motors", "test_motor.yaml"), []byte(localPart), 0o644); err != nil {
+		t.Fatalf("write local part: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(builtInDir, "motors", "test_motor.yaml"), []byte(builtInPart), 0o644); err != nil {
+		t.Fatalf("write built-in part: %v", err)
+	}
+
+	store := NewStoreWithDirs([]string{localDir, builtInDir})
+	part, err := store.LoadMotor(partID)
+	if err != nil {
+		t.Fatalf("LoadMotor returned error: %v", err)
+	}
+	if part.Name != "Local Motor" {
+		t.Fatalf("expected local part to win, got %q", part.Name)
+	}
+}
+
+func TestStore_LoadMissingPart_ReportsSearchDirs(t *testing.T) {
+	tmp := t.TempDir()
+	localDir := filepath.Join(tmp, "rv_parts")
+	builtInDir := filepath.Join(tmp, "parts")
+	store := NewStoreWithDirs([]string{localDir, builtInDir})
+
+	_, err := store.LoadMotor("motors/missing")
+	if err == nil {
+		t.Fatalf("expected error when loading missing motor, got nil")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "motors/missing") {
+		t.Fatalf("expected error to mention part id, got %q", msg)
+	}
+	if !strings.Contains(msg, localDir) || !strings.Contains(msg, builtInDir) {
+		t.Fatalf("expected error to list search dirs, got %q", msg)
 	}
 }
 

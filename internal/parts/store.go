@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/badimirzai/robotics-verifier-cli/internal/model"
 	"gopkg.in/yaml.v3"
@@ -68,12 +69,40 @@ type I2CSensorPartFile struct {
 	} `yaml:"i2c_device"`
 }
 
-// Store knows how to load part files from a base directory (usually "./parts").
-type Store struct{ BaseDir string }
+// Store knows how to load part files from one or more search directories.
+// Earlier directories take precedence over later ones.
+type Store struct{ Dirs []string }
 
 // NewStore creates a new part store rooted at baseDir (e.g. "parts").
 func NewStore(baseDir string) *Store {
-	return &Store{BaseDir: baseDir}
+	return NewStoreWithDirs([]string{baseDir})
+}
+
+// NewStoreWithDirs creates a new part store rooted at the provided directories.
+// Earlier directories take precedence over later ones.
+func NewStoreWithDirs(dirs []string) *Store {
+	cleaned := make([]string, 0, len(dirs))
+	for _, dir := range dirs {
+		if dir == "" {
+			continue
+		}
+		cleaned = append(cleaned, filepath.Clean(dir))
+	}
+	return &Store{Dirs: cleaned}
+}
+
+// PartNotFoundError reports a missing part along with search paths.
+type PartNotFoundError struct {
+	PartID     string
+	SearchDirs []string
+}
+
+func (e PartNotFoundError) Error() string {
+	paths := "none"
+	if len(e.SearchDirs) > 0 {
+		paths = strings.Join(e.SearchDirs, ", ")
+	}
+	return fmt.Sprintf("part %q not found; searched: %s", e.PartID, paths)
 }
 
 // LoadDriver loads a motor driver part by ID, e.g. "drivers/tb6612fng".
@@ -126,13 +155,25 @@ func (s *Store) LoadI2CSensor(partID string) (I2CSensorPartFile, error) {
 
 // loadPart is a small helper to read and unmarshal a YAML file.
 func (s *Store) loadPart(partID string, out any) error {
-	path := filepath.Join(s.BaseDir, filepath.FromSlash(partID)+".yaml")
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
+	if len(s.Dirs) == 0 {
+		return PartNotFoundError{PartID: partID, SearchDirs: nil}
 	}
-	if err := yaml.Unmarshal(data, out); err != nil {
-		return err
+
+	relPath := filepath.FromSlash(partID) + ".yaml"
+	for _, dir := range s.Dirs {
+		path := filepath.Join(dir, relPath)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		}
+		if err := yaml.Unmarshal(data, out); err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
+
+	return PartNotFoundError{PartID: partID, SearchDirs: s.Dirs}
 }

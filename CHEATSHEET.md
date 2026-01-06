@@ -52,3 +52,16 @@ rv check robot.yaml
 rv init --template 4wd-clean --out robot.yaml --force
 rv check robot.yaml
 ```
+
+## Parts libraries
+
+```bash
+# Use project-local parts in ./rv_parts (automatic)
+rv check robot.yaml
+
+# Add extra search directories (repeatable)
+rv check robot.yaml --parts-dir ./vendor/parts --parts-dir /opt/robot-parts
+
+# Use environment variable paths (split by OS list separator)
+RV_PARTS_DIRS="./vendor/parts:/opt/robot-parts" rv check robot.yaml
+```

@@ -8,7 +8,6 @@ import (
 
 	"github.com/badimirzai/robotics-verifier-cli/internal/model"
 	"github.com/badimirzai/robotics-verifier-cli/internal/output"
-	"github.com/badimirzai/robotics-verifier-cli/internal/parts"
 	"github.com/badimirzai/robotics-verifier-cli/internal/resolve"
 	"github.com/badimirzai/robotics-verifier-cli/internal/validate"
 	"github.com/spf13/cobra"
@@ -91,7 +90,11 @@ Examples:
 			return handleCheckError(outputFormat, 3, path, fmt.Errorf("decode yaml: %w", err), nil, prettyOutput, outFile)
 		}
 
-		store := parts.NewStore("parts")
+		partsDirs, _ := cmd.Flags().GetStringArray("parts-dir")
+		store, err := buildPartsStore(partsDirs, os.Getenv("RV_PARTS_DIRS"))
+		if err != nil {
+			return handleCheckError(outputFormat, 3, path, fmt.Errorf("build parts search paths: %w", err), nil, prettyOutput, outFile)
+		}
 		resolved, err := resolve.ResolveAll(raw, store)
 		if err != nil {
 			return handleCheckError(outputFormat, 3, path, fmt.Errorf("resolve spec with parts: %w", err), nil, prettyOutput, outFile)
@@ -125,6 +128,7 @@ func init() {
 	checkCmd.Flags().StringP("output", "o", "text", "Output format: text or json")
 	checkCmd.Flags().Bool("pretty", false, "Pretty print JSON to stdout (requires --output json)")
 	checkCmd.Flags().String("out-file", "", "Write compact JSON to file (requires --output json)")
+	checkCmd.Flags().StringArray("parts-dir", nil, "Additional parts directory (repeatable; after rv_parts and built-in parts)")
 	rootCmd.AddCommand(checkCmd)
 }
 
